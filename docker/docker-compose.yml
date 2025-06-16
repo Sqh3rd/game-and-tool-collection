@@ -1,0 +1,9 @@
+services:
+  db:
+    image: mongo
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
