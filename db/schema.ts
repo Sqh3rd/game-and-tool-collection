@@ -1,0 +1,1 @@
+export { userTable } from "./common/user.schema";
