@@ -12,6 +12,7 @@
                     <Password id="password" v-model="credentials.password" :feedback="false" toggle-mask fluid />
                 </div>
                 <Button type="submit">Log In</Button>
+                <span>Don't have an account yet? Then <NuxtLink to="/register">register now</NuxtLink></span>
             </form>
         </div>
     </div>
@@ -21,7 +22,7 @@
 import Button from "~/components/volt/Button.vue";
 import InputText from "~/components/volt/InputText.vue";
 import Password from "~/components/volt/Password.vue";
-const { loggedIn, user, fetch: refreshSession } = useUserSession();
+const { fetch: refreshSession } = useUserSession();
 const credentials = reactive({
     email: "",
     password: "",

@@ -9,8 +9,16 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    DATABASE_URL: "",
+    devAdminMail: "",
+    devAdminPwd: "",
   },
 
-  modules: ["nuxt-auth-utils", "@pinia/nuxt"],
+  hub: {
+    db: {
+      dialect: "postgresql",
+      casing: "snake_case"
+    }
+  },
+
+  modules: ["nuxt-auth-utils", "@pinia/nuxt", "@nuxthub/core"],
 })

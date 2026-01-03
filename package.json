@@ -10,15 +10,18 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.3.14",
+    "@nuxthub/core": "0.10.4",
     "@pinia/nuxt": "0.11.3",
     "@primevue/core": "^4.5.4",
     "@tailwindcss/vite": "^4.1.18",
     "dotenv": "^17.2.3",
+    "drizzle-kit": "^0.31.8",
     "drizzle-orm": "^0.45.1",
     "nuxt": "^4.2.2",
     "nuxt-auth-utils": "0.5.26",
-    "pg": "^8.16.3",
     "pinia": "^3.0.4",
+    "postgres": "^3.4.7",
     "primeicons": "^7.0.0",
     "primevue": "^4.5.4",
     "tailwind-merge": "^3.4.0",
@@ -26,12 +29,12 @@
     "tailwindcss-primeui": "^0.6.1",
     "vue": "^3.5.26",
     "vue-router": "^4.6.4",
-    "zod": "^4.2.1"
+    "zod": "^4.3.4"
   },
   "packageManager": "pnpm@10.27.0",
   "devDependencies": {
-    "@types/pg": "^8.16.0",
-    "drizzle-kit": "^0.31.8",
+    "sass": "^1.97.1",
+    "sass-loader": "^16.0.6",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vue-tsc": "^3.2.1"

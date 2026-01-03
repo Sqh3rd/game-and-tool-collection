@@ -6,3 +6,9 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_PASSWORD: root
+    volumes:
+      - db-data:/etc/data
+
+volumes:
+  db-data:
+    name: "db-volume"

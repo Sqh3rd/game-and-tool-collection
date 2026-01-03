@@ -34,8 +34,6 @@
     --clr-info-a0: light-dark(#1e56a3, #21498a);
     --clr-info-a10: light-dark(#347ada, #4077d1);
     --clr-info-a20: light-dark(#74a4e6, #92b2e5);
-
-    --clr-color: light-dark(var(--clr-dark-a0, --clr-light-a0));
 }
 
 :root {
@@ -74,14 +72,22 @@
     --p-content-border-color: light-dark(var(--p-surface-200), var(--p-surface-700));
     --p-content-hover-background: light-dark(var(--p-surface-100), var(--p-surface-800));
     --p-content-hover-color: light-dark(var(--p-surface-800), var(--p-surface-0));
-    --p-highlight-background: var(--p-primary-50, color-mix(in srgb, var(--p-primary-400), transparent 84%));
-    --p-highlight-color: var(--p-primary-700, rgba(255, 255, 255, 0.87));
-    --p-highlight-focus-background: var(--p-primary-100, color-mix(in srgb, var(--p-primary-400), transparent 76%));
-    --p-highlight-focus-color: var(--p-primary-800, rgba(255, 255, 255, 0.87));
+    --p-highlight-background: light-dark(var(--p-primary-50), color-mix(in srgb, var(--p-primary-400), transparent 84%));
+    --p-highlight-color: light-dark(var(--p-primary-700), rgba(255, 255, 255, 0.87));
+    --p-highlight-focus-background: light-dark(var(--p-primary-100), color-mix(in srgb, var(--p-primary-400), transparent 76%));
+    --p-highlight-focus-color: light-dark(var(--p-primary-800), rgba(255, 255, 255, 0.87));
     --p-text-color: light-dark(var(--p-surface-700), var(--p-surface-0));
     --p-text-hover-color: light-dark(var(--p-surface-800), var(--p-surface-0));
     --p-text-muted-color: light-dark(var(--p-surface-500), var(--p-surface-400));
     --p-text-hover-muted-color: light-dark(var(--p-surface-600), var(--p-surface-300));
+}
+
+.light {
+    color-scheme: light;
+}
+
+.dark {
+    color-scheme: dark;
 }
 
 body {
