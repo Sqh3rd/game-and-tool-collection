@@ -12,7 +12,8 @@
                     <Password id="password" v-model="credentials.password" :feedback="false" toggle-mask fluid />
                 </div>
                 <Button type="submit">Log In</Button>
-                <span>Don't have an account yet? Then <NuxtLink to="/register">register now</NuxtLink></span>
+                <span>Don't have an account yet? Then <NuxtLink class="text-primary" to="/register">register now
+                    </NuxtLink></span>
             </form>
         </div>
     </div>

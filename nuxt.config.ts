@@ -7,6 +7,7 @@ export default defineNuxtConfig({
   vite: {
     plugins: [tailwindcss()],
   },
+  ssr: false,
 
   runtimeConfig: {
     devAdminMail: "",
@@ -20,5 +21,10 @@ export default defineNuxtConfig({
     }
   },
 
-  modules: ["nuxt-auth-utils", "@pinia/nuxt", "@nuxthub/core"],
+  modules: [
+    "nuxt-auth-utils",
+    "@pinia/nuxt",
+    "@nuxthub/core",
+    "@vueuse/nuxt",
+  ],
 })

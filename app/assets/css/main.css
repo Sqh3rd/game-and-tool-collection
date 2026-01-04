@@ -2,13 +2,9 @@
 @import "tailwindcss-primeui";
 @import "primeicons/primeicons.css";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
-    --offset-small: .5rem;
-    --offset-medium: 1rem;
-    --offset-large: 2rem;
-
-    --transition-duration-short: 150ms;
-
     color-scheme: light dark;
 
     /** Base colors */
@@ -82,12 +78,12 @@
     --p-text-hover-muted-color: light-dark(var(--p-surface-600), var(--p-surface-300));
 }
 
-.light {
-    color-scheme: light;
-}
-
 .dark {
     color-scheme: dark;
+}
+
+.light {
+    color-scheme: light;
 }
 
 body {
