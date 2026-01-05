@@ -1,16 +1,44 @@
-import z from "zod";
-
-const config = useRuntimeConfig();
-
-const bodySchema = z.object({
-    email: z.email(),
-    name: z.string(),
-    password: z.string().min(32)
-});
+import { eq } from "drizzle-orm";
+import { users } from "hub:db:schema";
+import { newUserSchema } from "~~/shared/types/common";
 
 export default defineEventHandler(async (event) => {
-    const { email, password, name } = await readValidatedBody(event, bodySchema.parse);
+    const { email, name, password, confirmPassword } = await readValidatedBody(event, newUserSchema.parse);
 
-    // check if password is secure enough
-    // check if email or name already exists
+    const usersWithSameEmail = await db.select().from(users).where(eq(users.email, email));
+    if (usersWithSameEmail.length !== 0) {
+        throw createError({
+            status: 401,
+            message: "E-Mail already exists",
+            data: {
+                field: "email",
+            }
+        })
+    }
+
+    const hashedPassword = await hashPassword(password);
+    if (!await verifyPassword(hashedPassword, confirmPassword)) {
+        throw createError({
+            status: 401,
+            message: "Mismatch between password and confirm password",
+            data: {
+                field: ["password", "confirmPassword"]
+            }
+        })
+    };
+
+    const newUser = (await db.insert(users).values({
+        email,
+        hashedPassword,
+        name
+    }).returning())[0];
+
+    await setUserSession(event, {
+        user: {
+            email: newUser.email,
+            name: newUser.name
+        }
+    });
+
+    return {};
 });

@@ -39,7 +39,9 @@
             <SecondaryButton label="Log out" text @click="logout" />
         </template>
     </Toolbar>
-    <slot />
+    <div class="w-full h-full p-5 flex justify-center">
+        <slot />
+    </div>
 </template>
 
 <script setup lang="ts">

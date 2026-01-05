@@ -32,6 +32,13 @@
     --clr-info-a20: light-dark(#74a4e6, #92b2e5);
 }
 
+@theme {
+    --color-success: var(--clr-success-a0);
+    --color-warning: var(--clr-warning-a0);
+    --color-danger: var(--clr-danger-a0);
+    --color-info: var(--clr-info-a0);
+}
+
 :root {
     --p-primary-50: #eaf3f7;
     --p-primary-100: #b7d6e4;
