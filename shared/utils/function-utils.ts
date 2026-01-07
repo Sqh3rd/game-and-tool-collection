@@ -1,0 +1,1 @@
+export const all = (...funcs: (() => void)[]) => funcs.forEach(it => it());

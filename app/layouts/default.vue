@@ -30,7 +30,8 @@
             <NuxtLink :class="TEXT_BUTTON_LOOK" to="/login">Log In</NuxtLink>
         </template>
         <template #end v-else>
-            <ToggleSwitch pt:slider:class="dark:checked:bg-surface-700" v-model="darkModeToggle">
+            <ToggleSwitch :pt:slider:class="THEME_TOGGLE_SWITCH_CLASSES.SLIDER"
+                :pt:handle:class="THEME_TOGGLE_SWITCH_CLASSES.HANDLE" v-model="darkModeToggle">
                 <template #handle="{ checked }">
                     <i :class="['text-xs pi', { 'pi-moon': checked, 'pi-sun': !checked }]"></i>
                 </template>

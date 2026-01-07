@@ -26,5 +26,6 @@ export default defineNuxtConfig({
     "@pinia/nuxt",
     "@nuxthub/core",
     "@vueuse/nuxt",
+    "@nuxt/eslint",
   ],
 })

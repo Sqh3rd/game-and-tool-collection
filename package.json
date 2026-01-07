@@ -7,10 +7,13 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.3.14",
+    "@nuxt/eslint": "1.12.1",
     "@nuxthub/core": "0.10.4",
     "@pinia/nuxt": "0.11.3",
     "@primevue/core": "^4.5.4",
@@ -21,6 +24,7 @@
     "drizzle-kit": "^0.31.8",
     "drizzle-orm": "^0.45.1",
     "drizzle-zod": "^0.8.3",
+    "eslint": "^9.39.2",
     "nuxt": "^4.2.2",
     "nuxt-auth-utils": "0.5.26",
     "pinia": "^3.0.4",

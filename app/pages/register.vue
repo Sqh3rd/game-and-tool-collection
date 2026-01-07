@@ -4,13 +4,6 @@
     <Form v-slot="$form" :initial-values="userData" :resolver="zodResolver(newUserSchema)" @submit="register"
       class="flex flex-col justify-center gap-4">
       <div class="flex flex-col">
-        <label for="e-mail">E-Mail <span class="text-danger">*</span></label>
-        <InputText id="e-mail" name="email" type="e-mail" required fluid />
-        <Message v-if="$form.email?.invalid" severity="error" size="small" variant="simple">
-          {{ $form.email.error.message }}
-        </Message>
-      </div>
-      <div class="flex flex-col">
         <label for="name">Username <span class="text-danger">*</span></label>
         <InputText id="name" name="name" required fluid />
         <Message v-if="$form.name?.invalid" severity="error" size="small" variant="simple">
@@ -18,8 +11,23 @@
         </Message>
       </div>
       <div class="flex flex-col">
+        <label for="e-mail">E-Mail <span class="text-danger">*</span></label>
+        <InputText id="e-mail" name="email" type="e-mail" required fluid />
+        <Message v-if="$form.email?.invalid" severity="error" size="small" variant="simple">
+          {{ $form.email.error.message }}
+        </Message>
+      </div>
+      <div class="flex flex-col">
         <label for="password">Password <span class="text-danger">*</span></label>
-        <Password id="password" name="password" required toggle-mask fluid>
+        <Password id="password" name="password" toggle-mask required fluid>
+          <template #maskicon="{ toggleCallback }">
+            <i :class="MASK_ICON_CLASSES" @click="all(toggleCallback, togglePasswordMasked)">
+            </i>
+          </template>
+          <template #unmaskicon="{ toggleCallback }">
+            <i :class="UNMASK_ICON_CLASSES" @click="all(toggleCallback, togglePasswordMasked)">
+            </i>
+          </template>
           <template #content>
             Password must have
           </template>
@@ -47,7 +55,8 @@
       <div class="flex flex-col">
         <label for="confirmPassword">Confirm Password <span class="text-danger">*</span></label>
         <Password id="confirmPassword" name="confirmPassword" :feedback="false"
-          :invalid="confirmPasswordValid($form.confirmPassword, $form.password)" :pt:unmasked="true" fluid />
+          :invalid="confirmPasswordValid($form.confirmPassword, $form.password)" fluid
+          :pt:root="ptTogglePasswordMasked" />
         <Message v-if="$form.confirmPassword?.value !== $form.password?.value" severity="error" size="small"
           variant="simple">
           Passwords do not match
@@ -70,6 +79,20 @@ import { Form, type FormFieldState, type FormSlots, type FormSubmitEvent } from 
 import { zodResolver } from "@primevue/forms/resolvers/zod";
 import type { $ZodIssue } from "zod/v4/core";
 import Divider from "~/components/volt/Divider.vue";
+import type { PasswordPassThroughMethodOptions } from "primevue";
+
+const MASK_ICON_CLASSES = "pi pi-eye end-3 text-surface-500 dark:text-surface-400 absolute top-1/2 -mt-2 w-4 h-4";
+const UNMASK_ICON_CLASSES = "pi pi-eye-slash end-3 text-surface-500 dark:text-surface-400 absolute top-1/2 -mt-2 w-4 h-4";
+
+const [isPasswordMasked, togglePasswordMasked] = useToggle(true);
+
+const ptTogglePasswordMasked = computed(() => {
+  const isPasswordUnmasked = !isPasswordMasked.value;
+  return (options: PasswordPassThroughMethodOptions) => {
+    options.state.unmasked = isPasswordUnmasked;
+    return {};
+  }
+})
 
 const userData = ref<NewUser>({
   email: "",
