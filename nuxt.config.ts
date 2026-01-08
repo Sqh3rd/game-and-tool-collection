@@ -17,8 +17,8 @@ export default defineNuxtConfig({
   hub: {
     db: {
       dialect: "postgresql",
-      casing: "snake_case"
-    }
+      casing: "snake_case",
+    },
   },
 
   modules: [
@@ -28,4 +28,4 @@ export default defineNuxtConfig({
     "@vueuse/nuxt",
     "@nuxt/eslint",
   ],
-})
+});

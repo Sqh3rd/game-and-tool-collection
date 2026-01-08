@@ -40,6 +40,7 @@
   },
   "packageManager": "pnpm@10.27.0",
   "devDependencies": {
+    "prettier": "^3.7.4",
     "sass": "^1.97.1",
     "sass-loader": "^16.0.6",
     "tsx": "^4.21.0",
