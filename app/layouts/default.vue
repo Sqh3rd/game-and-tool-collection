@@ -1,7 +1,7 @@
 <template>
   <div class="w-full h-full">
     <Toolbar
-      class="sticky top-0 rounded-none border-0 border-b-2 h-20 w-full"
+      class="sticky top-0 rounded-none border-0 border-b-2 h-20 w-full z-1000"
       pt:start:class="gap-2"
       pt:end:class="gap-2"
     >

@@ -17,7 +17,7 @@
           fluid
         />
         <Message
-          v-if="$form.name?.invalid"
+          v-if="$form.name?.invalid && $form.name.error"
           severity="error"
           size="small"
           variant="simple"
@@ -35,7 +35,7 @@
           fluid
         />
         <Message
-          v-if="$form.email?.invalid"
+          v-if="$form.email?.invalid && $form.email.error"
           severity="error"
           size="small"
           variant="simple"
@@ -96,7 +96,7 @@
           </template>
         </Password>
         <Message
-          v-if="$form.password?.invalid"
+          v-if="$form.password?.invalid && $form.password.error"
           severity="error"
           size="small"
           variant="simple"
@@ -113,8 +113,9 @@
           name="confirmPassword"
           :feedback="false"
           :invalid="confirmPasswordValid($form.confirmPassword, $form.password)"
-          fluid
           :pt:root="ptTogglePasswordMasked"
+          fluid
+          required
         />
         <Message
           v-if="$form.confirmPassword?.value !== $form.password?.value"
@@ -125,7 +126,9 @@
           Passwords do not match
         </Message>
         <Message
-          v-else-if="$form.confirmPassword?.invalid"
+          v-else-if="
+            $form.confirmPassword?.invalid && $form.confirmPassword.error
+          "
           severity="error"
           size="small"
           variant="simple"
@@ -135,7 +138,6 @@
       </div>
       <Button
         type="submit"
-        :disabled="!$form.valid || $form.email?.pristine"
         label="Register"
       />
     </Form>
@@ -195,7 +197,9 @@ const hasRelevantError = (
     .flat()
     .some(
       (code) =>
-        !!errors?.some(
+        !!errors?.some
+        && typeof errors.some === "function"
+        && errors.some(
           (it) =>
             it.code === code
             || (it.code === "custom" && !!it.params && !!it.params[code]),
@@ -212,6 +216,7 @@ const confirmPasswordValid = (
 
 async function register(event: FormSubmitEvent) {
   if (!event.valid) return;
+  if (!newUserSchema.safeParse(event.values)) return;
   try {
     await $fetch("/api/register", { method: "POST", body: event.values });
   } catch (e: unknown) {

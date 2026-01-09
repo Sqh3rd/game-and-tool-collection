@@ -1,3 +1,8 @@
+import type {
+  PrimitiveFromStringLiteral,
+  PrimitiveStringLiterals,
+} from "./helper-types";
+
 export function isNotNull<T>(it: T | null | undefined): it is T {
   return it != null;
 }
@@ -10,3 +15,10 @@ export const notNull = <T>(it: T | null | undefined): T => {
   assertNotNull(it);
   return it;
 };
+
+export function isPrimitive<T extends PrimitiveStringLiterals>(
+  it: unknown,
+  primitive: T,
+): it is PrimitiveFromStringLiteral<T> {
+  return typeof it === primitive;
+}

@@ -1,24 +1,22 @@
 import { eq } from "drizzle-orm";
 import { users } from "hub:db:schema";
-import z from "zod";
-
-const bodySchema = z.object({
-  email: z.email(),
-  password: z.string().min(16).max(256),
-});
 
 export default defineEventHandler(async (event) => {
-  const { email, password } = await readValidatedBody(event, bodySchema.parse);
+  const result = await readValidatedBody(event, loginSchema.safeParse);
+  const err = createError({
+    status: 401,
+    message: "Incorrect E-Mail or Password",
+  });
+  if (!result.success) throw err;
+
+  const { email, password } = result.data;
 
   const userQuery = await db.select().from(users).where(eq(users.email, email));
-  if (userQuery.length === 0 || userQuery[0] == null) {
-    throw createError({ status: 401, message: "Invalid E-Mail Address" });
-  }
+  if (userQuery.length === 0 || userQuery[0] == null) throw err;
+
   const user = userQuery[0];
   const isPwdValid = verifyPassword(user.hashedPassword, password);
-  if (!isPwdValid) {
-    throw createError({ status: 401, message: "Incorrect Password" });
-  }
+  if (!isPwdValid) throw err;
 
   if (passwordNeedsReHash(user.hashedPassword)) {
     const newlyHashedPwd = await hashPassword(password);

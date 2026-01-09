@@ -36,7 +36,10 @@ export const passwordSchema = z
       );
   });
 
-export const loginSchema = z.object({ email: z.email(), password: z.string() });
+export const loginSchema = z.object({
+  email: z.email(),
+  password: z.string().min(1, { error: "Field is required" }),
+});
 export type Login = z.infer<typeof loginSchema>;
 
 export const userSchema = createSelectSchema(users)
@@ -53,7 +56,7 @@ const tempNewUserSchema = createInsertSchema(users)
       .trim()
       .min(3, { error: "Must be at least 3 characters long" }),
     password: passwordSchema,
-    confirmPassword: z.string(),
+    confirmPassword: z.string().min(1, { error: "Field is required" }),
   });
 export const newUserSchema = tempNewUserSchema.refine(
   (data) => data.password === data.confirmPassword,

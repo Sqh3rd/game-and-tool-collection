@@ -8,7 +8,7 @@
       :initial-values="credentials"
       :resolver="zodResolver(loginSchema)"
       class="flex flex-col justify-center gap-4"
-      @submit.prevent="login"
+      @submit="login"
     >
       <div class="flex flex-col">
         <label for="e-mail">E-Mail</label>
@@ -18,6 +18,13 @@
           type="e-mail"
           fluid
         />
+        <Message
+          v-if="$form.email?.invalid"
+          severity="error"
+          size="small"
+          variant="simple"
+          >{{ $form.email.error.message }}</Message
+        >
       </div>
       <div class="flex flex-col">
         <label for="password">Password</label>
@@ -43,28 +50,54 @@
 </template>
 
 <script lang="ts" setup>
-import { Form } from "@primevue/forms";
+import { Form, type FormSubmitEvent } from "@primevue/forms";
 import { zodResolver } from "@primevue/forms/resolvers/zod";
+import { useToast } from "primevue";
 import Button from "~/components/volt/Button.vue";
 import InputText from "~/components/volt/InputText.vue";
+import Message from "~/components/volt/Message.vue";
 import Password from "~/components/volt/Password.vue";
 import { useGlobalSpinnerStore } from "~/stores/globalSpinner";
 import type { Login } from "~~/shared/types/common";
+import { isPrimitive } from "~~/shared/utils/type-assertions";
 
 const { fetch: refreshSession } = useUserSession();
 const { startLoad, endLoad } = useGlobalSpinnerStore();
 const credentials = ref<Login>({ email: "", password: "" });
 const id = Symbol("login");
+const toast = useToast();
 
-async function login() {
+async function login(event: FormSubmitEvent) {
+  if (!event.valid) return;
+  if (!loginSchema.safeParse(event.values)) return;
+
   try {
     startLoad(id);
-    await $fetch("/api/login", { method: "POST", body: credentials });
+    await $fetch("/api/login", { method: "POST", body: event.values });
 
     await refreshSession();
     await navigateTo("/");
-  } catch {
-    alert("Bad credentials");
+  } catch (e: unknown) {
+    if (
+      isPrimitive(e, "object")
+      && "data" in e
+      && isPrimitive(e.data, "object")
+      && "message" in e.data
+    ) {
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: String(e.data.message),
+        life: 3000,
+      });
+    } else {
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: "Error occured while trying to log in. Please try again",
+        life: 3000,
+      });
+    }
   }
   endLoad(id);
 }
