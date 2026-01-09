@@ -3,5 +3,5 @@ import { db } from "hub:db";
 import { users } from "~~/server/db/schema/users";
 
 export default defineEventHandler(async (_) => {
-    return (await db.select({ count: count() }).from(users))[0].count;
-})
+  return (await db.select({ count: count() }).from(users))[0].count;
+});

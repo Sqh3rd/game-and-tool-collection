@@ -4,22 +4,12 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineNuxtConfig({
   compatibilityDate: "2025-05-15",
   devtools: { enabled: true },
-  vite: {
-    plugins: [tailwindcss()],
-  },
+  vite: { plugins: [tailwindcss()] },
   ssr: false,
 
-  runtimeConfig: {
-    devAdminMail: "",
-    devAdminPwd: "",
-  },
+  runtimeConfig: { devAdminMail: "", devAdminPwd: "" },
 
-  hub: {
-    db: {
-      dialect: "postgresql",
-      casing: "snake_case",
-    },
-  },
+  hub: { db: { dialect: "postgresql", casing: "snake_case" } },
 
   modules: [
     "nuxt-auth-utils",

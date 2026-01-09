@@ -1,15 +1,15 @@
 export const useGlobalSpinnerStore = defineStore(GLOBAL_SPINNER, () => {
   // Properties
-  const currentlyLoading = ref<Component[]>([]);
+  const currentlyLoading = ref<symbol[]>([]);
 
   // Getters
   const isLoading = computed(() => currentlyLoading.value.length > 0);
 
   //Actions
-  const startLoad = (it: Component) => {
+  const startLoad = (it: symbol) => {
     currentlyLoading.value.push(it);
   };
-  const endLoad = (it: Component) => {
+  const endLoad = (it: symbol) => {
     const index = currentlyLoading.value.indexOf(it);
     currentlyLoading.value.splice(index, 1);
   };

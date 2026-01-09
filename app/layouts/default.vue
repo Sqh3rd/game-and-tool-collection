@@ -6,8 +6,14 @@
       pt:end:class="gap-2"
     >
       <template #start>
-        <NuxtLink class="px-3" to="/">
-          <CustomIcon svg="main" class="w-10 h-10 fill-primary" />
+        <NuxtLink
+          class="px-3"
+          to="/"
+        >
+          <CustomIcon
+            svg="main"
+            class="w-10 h-10 fill-primary"
+          />
         </NuxtLink>
         <ButtonGroup>
           <SecondaryButton
@@ -20,7 +26,12 @@
             disabled
             @click="gamesMenu?.toggle"
           />
-          <Menu id="games_menu" ref="gamesMenu" :model="games" :popup="true">
+          <Menu
+            id="games_menu"
+            ref="gamesMenu"
+            :model="games"
+            :popup="true"
+          >
             <template #item="{ item, props }">
               <SecondaryButton
                 as="a"
@@ -39,7 +50,12 @@
             text
             @click="toolsMenu?.toggle"
           />
-          <Menu id="tools_menu" ref="toolsMenu" :model="tools" :popup="true">
+          <Menu
+            id="tools_menu"
+            ref="toolsMenu"
+            :model="tools"
+            :popup="true"
+          >
             <template #item="{ item }">
               <NuxtLink
                 :class="TEXT_BUTTON_LOOK"
@@ -51,7 +67,10 @@
           </Menu>
         </ButtonGroup>
       </template>
-      <template v-if="!loggedIn" #end>
+      <template
+        v-if="!loggedIn"
+        #end
+      >
         <ToggleSwitch
           v-model="darkModeToggle"
           :pt:slider:class="THEME_TOGGLE_SWITCH_CLASSES.SLIDER"
@@ -66,9 +85,16 @@
             />
           </template>
         </ToggleSwitch>
-        <NuxtLink :class="TEXT_BUTTON_LOOK" to="/login">Log In</NuxtLink>
+        <NuxtLink
+          :class="TEXT_BUTTON_LOOK"
+          to="/login"
+          >Log In</NuxtLink
+        >
       </template>
-      <template v-else #end>
+      <template
+        v-else
+        #end
+      >
         <ToggleSwitch
           v-model="darkModeToggle"
           :pt:slider:class="THEME_TOGGLE_SWITCH_CLASSES.SLIDER"
@@ -83,8 +109,16 @@
             />
           </template>
         </ToggleSwitch>
-        <NuxtLink :class="TEXT_BUTTON_LOOK" to="/profile">Profile</NuxtLink>
-        <SecondaryButton label="Log out" text @click="logout" />
+        <NuxtLink
+          :class="TEXT_BUTTON_LOOK"
+          to="/profile"
+          >Profile</NuxtLink
+        >
+        <SecondaryButton
+          label="Log out"
+          text
+          @click="logout"
+        />
       </template>
     </Toolbar>
     <div class="w-full h-full p-5 flex justify-center">

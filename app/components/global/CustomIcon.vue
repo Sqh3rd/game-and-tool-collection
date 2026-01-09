@@ -16,10 +16,7 @@
 <script lang="ts" setup>
 type CustomIcon = "main";
 
-type CustomIconProps = {
-  outline?: boolean;
-  svg: CustomIcon;
-};
+type CustomIconProps = { outline?: boolean; svg: CustomIcon };
 
 defineProps<CustomIconProps>();
 </script>

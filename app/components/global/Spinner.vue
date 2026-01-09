@@ -11,9 +11,7 @@
 </template>
 
 <script lang="ts" setup>
-defineProps<{
-  show: boolean;
-}>();
+defineProps<{ show: boolean }>();
 </script>
 
 <style lang="css">
