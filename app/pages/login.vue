@@ -1,51 +1,51 @@
 <template>
-  <div
-    class="w-1/2 max-w-xl min-w-xs flex flex-col justify-center content-center"
-  >
-    <h1 class="text-xl font-semibold text-center pb-6">Log In</h1>
-    <Form
-      v-slot="$form"
-      :initial-values="credentials"
-      :resolver="zodResolver(loginSchema)"
-      class="flex flex-col justify-center gap-4"
-      @submit="login"
-    >
-      <div class="flex flex-col">
-        <label for="e-mail">E-Mail</label>
-        <InputText
-          id="e-mail"
-          name="email"
-          type="e-mail"
-          fluid
-        />
-        <Message
-          v-if="$form.email?.invalid"
-          severity="error"
-          size="small"
-          variant="simple"
-          >{{ $form.email.error.message }}</Message
-        >
-      </div>
-      <div class="flex flex-col">
-        <label for="password">Password</label>
-        <Password
-          id="password"
-          name="password"
-          :feedback="false"
-          toggle-mask
-          fluid
-        />
-      </div>
-      <Button type="submit">Log In</Button>
-      <span
-        >Don't have an account yet? Then
-        <NuxtLink
-          class="text-primary"
-          to="/register"
-          >register now
-        </NuxtLink></span
+  <div class="w-full h-full p-5 flex justify-center">
+    <div class="w-1/2 max-w-xl min-w-xs flex flex-col justify-center">
+      <h1 class="text-xl font-semibold text-center pb-6">Log In</h1>
+      <Form
+        v-slot="$form"
+        :initial-values="credentials"
+        :resolver="zodResolver(loginSchema)"
+        class="flex flex-col justify-center gap-4"
+        @submit="login"
       >
-    </Form>
+        <div class="flex flex-col">
+          <label for="e-mail">E-Mail</label>
+          <InputText
+            id="e-mail"
+            name="email"
+            type="e-mail"
+            fluid
+          />
+          <Message
+            v-if="$form.email?.invalid"
+            severity="error"
+            size="small"
+            variant="simple"
+            >{{ $form.email.error.message }}</Message
+          >
+        </div>
+        <div class="flex flex-col">
+          <label for="password">Password</label>
+          <Password
+            id="password"
+            name="password"
+            :feedback="false"
+            toggle-mask
+            fluid
+          />
+        </div>
+        <Button type="submit" label="Log In" />
+        <span
+          >Don't have an account yet? Then
+          <NuxtLink
+            class="text-primary"
+            to="/register"
+            >register now
+          </NuxtLink></span
+        >
+      </Form>
+    </div>
   </div>
 </template>
 
@@ -61,10 +61,11 @@ import { useGlobalSpinnerStore } from "~/stores/globalSpinner";
 import type { Login } from "~~/shared/types/common";
 import { isPrimitive } from "~~/shared/utils/type-assertions";
 
+const ID = Symbol(this);
+
 const { fetch: refreshSession } = useUserSession();
 const { startLoad, endLoad } = useGlobalSpinnerStore();
 const credentials = ref<Login>({ email: "", password: "" });
-const id = Symbol("login");
 const toast = useToast();
 
 async function login(event: FormSubmitEvent) {
@@ -72,7 +73,7 @@ async function login(event: FormSubmitEvent) {
   if (!loginSchema.safeParse(event.values)) return;
 
   try {
-    startLoad(id);
+    startLoad(ID);
     await $fetch("/api/login", { method: "POST", body: event.values });
 
     await refreshSession();
@@ -99,6 +100,6 @@ async function login(event: FormSubmitEvent) {
       });
     }
   }
-  endLoad(id);
+  endLoad(ID);
 }
 </script>

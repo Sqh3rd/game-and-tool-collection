@@ -37,6 +37,17 @@
   --color-warning: var(--clr-warning-a0);
   --color-danger: var(--clr-danger-a0);
   --color-info: var(--clr-info-a0);
+
+  --animate-trace: trace 1s ease-out 1;
+
+  @keyframes trace {
+    from {
+      stroke-dasharray: 0 100;
+    }
+    to {
+      stroke-dasharray: 100 0;
+    }
+  }
 }
 
 :root {

@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-full flex flex-col justify-center items-center gap-5">
+  <div class="w-full h-full p-5 flex flex-col justify-center items-center gap-5">
     <CustomIcon
       svg="main"
       class="fill-primary w-40 h-40"

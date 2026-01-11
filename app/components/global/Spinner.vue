@@ -1,7 +1,6 @@
 <template>
   <div
-    v-if="show"
-    class="absolute top-0 bottom-0 left-0 right-0 flex flex-col justify-center items-center opacity-50 bg-surface-500 dark:bg-surface-700 z-99999"
+    class="absolute top-0 bottom-0 left-0 right-0 flex flex-col justify-center items-center opacity-50 bg-surface-200 dark:bg-surface-700 z-99999"
   >
     <CustomIcon
       svg="main"
@@ -11,7 +10,6 @@
 </template>
 
 <script lang="ts" setup>
-defineProps<{ show: boolean }>();
 </script>
 
 <style lang="css">

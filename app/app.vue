@@ -1,7 +1,7 @@
 <template>
   <NuxtLayout>
     <Toast />
-    <Spinner :show="spinnerStore.isLoading" />
+    <Spinner v-if="spinnerStore.isLoading" />
     <NuxtPage />
   </NuxtLayout>
 </template>

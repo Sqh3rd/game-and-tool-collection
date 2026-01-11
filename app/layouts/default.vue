@@ -121,9 +121,7 @@
         />
       </template>
     </Toolbar>
-    <div class="w-full h-full p-5 flex justify-center">
       <slot />
-    </div>
   </div>
 </template>
 
@@ -145,9 +143,11 @@ const THEME_TOGGLE_SWITCH_CLASSES = {
 const { loggedIn, clear: clearSession } = useUserSession();
 
 const gamesMenu = ref();
-const games = ref([{ label: "Wow such empty" }]);
+const games = [{ label: "Wow such empty" }];
 const toolsMenu = ref();
-const tools = ref([{ label: "F/AGRC", href: "/tools/fagrc" }]);
+const tools = [
+  { label: "Overview", href: "/tools/overview"},
+  { label: "F/AGRC", href: "/tools/fagrc" }];
 
 async function logout() {
   await clearSession();

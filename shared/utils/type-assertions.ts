@@ -1,3 +1,4 @@
+import type { ServerError } from "../types/common";
 import type {
   PrimitiveFromStringLiteral,
   PrimitiveStringLiterals,
@@ -21,4 +22,12 @@ export function isPrimitive<T extends PrimitiveStringLiterals>(
   primitive: T,
 ): it is PrimitiveFromStringLiteral<T> {
   return typeof it === primitive;
+}
+
+export function containsAll<T extends object, S extends string[]>(it: T, keys: S): it is T & {[key in S[number]]: unknown} {
+  return keys.every(key => key in it);
+}
+
+export function isServerError(it: unknown): it is ServerError {
+  const keys: (keyof ServerError)[] = ["cause", "data", "fatal", "message", "name", "stack", "statusCode"];
 }

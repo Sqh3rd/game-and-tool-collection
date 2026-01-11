@@ -27,6 +27,7 @@
     "drizzle-orm": "^0.45.1",
     "drizzle-zod": "^0.8.3",
     "eslint": "^9.39.2",
+    "eslint-plugin-zod-x": "^2.0.0",
     "nuxt": "^4.2.2",
     "nuxt-auth-utils": "0.5.26",
     "pinia": "^3.0.4",
