@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-full p-5 flex flex-col justify-center items-center gap-5">
+  <div class="size-full p-5 flex flex-col justify-center items-center gap-5">
     <h1 class="text-3xl">Tools</h1>
     <Divider class="w-1/2!" />
     <span>Collection of mildly useful/interesting tools</span>
@@ -10,9 +10,13 @@
         :to="tool.link"
       >
         <Card
-          class="w-full h-full cursor-pointer border-2 border-transparent duration-100 hover:border-primary-150 dark:hover:border-primary-600 hover:-translate-y-2"
+          class="size-full cursor-pointer border-2 border-transparent duration-100 hover:border-primary-150 dark:hover:border-primary-600 hover:-translate-y-2"
         >
-          <template #header><CustomIcon svg="main" class="stroke-2 fill-transparent stroke-surface-400 hover:animate-trace" /></template>
+          <template #header
+            ><CustomIcon
+              svg="main"
+              class="stroke-2 fill-transparent stroke-surface-400 hover:animate-trace"
+          /></template>
           <template #title>{{ tool.title }}</template>
           <template #subtitle>{{ tool.subtitle }}</template>
           <template #content>{{ tool.description }}</template>

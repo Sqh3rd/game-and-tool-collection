@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-full">
+  <div class="size-full">
     <Toolbar
       class="sticky top-0 rounded-none border-0 border-b-2 h-20 w-full z-1000"
       pt:start:class="gap-2"
@@ -121,18 +121,18 @@
         />
       </template>
     </Toolbar>
-      <slot />
+    <slot />
   </div>
 </template>
 
 <script setup lang="ts">
-import Menu from "~/components/volt/Menu.vue";
-import Toolbar from "~/components/volt/Toolbar.vue";
 import { PrimeIcons } from "@primevue/core";
+import CustomIcon from "~/components/global/CustomIcon.vue";
 import ButtonGroup from "~/components/volt/ButtonGroup.vue";
+import Menu from "~/components/volt/Menu.vue";
 import SecondaryButton from "~/components/volt/SecondaryButton.vue";
 import ToggleSwitch from "~/components/volt/ToggleSwitch.vue";
-import CustomIcon from "~/components/global/CustomIcon.vue";
+import Toolbar from "~/components/volt/Toolbar.vue";
 
 const TEXT_BUTTON_LOOK = `px-3 py-2 dark:text-surface-400 text-surface-500 dark:hover:bg-surface-800 hover:bg-surface-100 duration-200 rounded-md`;
 const THEME_TOGGLE_SWITCH_CLASSES = {
@@ -146,8 +146,9 @@ const gamesMenu = ref();
 const games = [{ label: "Wow such empty" }];
 const toolsMenu = ref();
 const tools = [
-  { label: "Overview", href: "/tools/overview"},
-  { label: "F/AGRC", href: "/tools/fagrc" }];
+  { label: "Overview", href: "/tools/overview" },
+  { label: "F/AGRC", href: "/tools/fagrc" },
+];
 
 async function logout() {
   await clearSession();

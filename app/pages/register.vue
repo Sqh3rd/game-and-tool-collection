@@ -161,7 +161,8 @@ import {
 import { zodResolver } from "@primevue/forms/resolvers/zod";
 import type { $ZodIssue } from "zod/v4/core";
 import Divider from "~/components/volt/Divider.vue";
-import type { PasswordPassThroughMethodOptions } from "primevue";
+import { useToast, type PasswordPassThroughMethodOptions } from "primevue";
+import { serverErrorSchema } from "~~/shared/types/common";
 
 const MASK_ICON_CLASSES =
   "pi pi-eye end-3 text-surface-500 dark:text-surface-400 absolute top-1/2 -mt-2 w-4 h-4";
@@ -173,6 +174,8 @@ const ID = Symbol(this);
 const { startLoad, endLoad } = useGlobalSpinnerStore();
 const { fetch: refreshUserSession } = useUserSession();
 const [isPasswordMasked, togglePasswordMasked] = useToggle(true);
+
+const toast = useToast();
 
 const ptTogglePasswordMasked = computed(() => {
   const isPasswordUnmasked = !isPasswordMasked.value;
@@ -232,7 +235,22 @@ async function register(event: FormSubmitEvent) {
     await refreshUserSession();
     await navigateTo("/");
   } catch (e: unknown) {
-    console.log(e);
+    const serverError = serverErrorSchema.safeParse(e);
+    if (serverError.success) {
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: String(serverError.data.message),
+        life: 3000,
+      });
+    } else {
+      toast.add({
+        severity: "error",
+        summary: "Error",
+        detail: "Error occured while trying to log in. Please try again",
+        life: 3000,
+      });
+    }
   }
   endLoad(ID);
 }

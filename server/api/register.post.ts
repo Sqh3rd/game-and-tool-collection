@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { users } from "hub:db:schema";
+import { user } from "hub:db:schema";
 import { newUserSchema } from "~~/shared/types/common";
 
 export default defineEventHandler(async (event) => {
@@ -10,8 +10,8 @@ export default defineEventHandler(async (event) => {
 
   const usersWithSameEmail = await db
     .select()
-    .from(users)
-    .where(eq(users.email, email));
+    .from(user)
+    .where(eq(user.email, email));
   if (usersWithSameEmail.length !== 0) {
     throw createError({
       status: 401,
@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const newUser = (
-    await db.insert(users).values({ email, hashedPassword, name }).returning()
+    await db.insert(user).values({ email, hashedPassword, name }).returning()
   )[0];
 
   await setUserSession(event, {

@@ -23,15 +23,13 @@
     "@tailwindcss/vite": "^4.1.18",
     "@vueuse/nuxt": "14.1.0",
     "dotenv": "^17.2.3",
-    "drizzle-kit": "^0.31.8",
-    "drizzle-orm": "^0.45.1",
-    "drizzle-zod": "^0.8.3",
+    "drizzle-orm": "1.0.0-beta.10-42c284e",
+    "drizzle-zod": "1.0.0-beta.10-42c284e",
     "eslint": "^9.39.2",
-    "eslint-plugin-zod-x": "^2.0.0",
     "nuxt": "^4.2.2",
     "nuxt-auth-utils": "0.5.26",
     "pinia": "^3.0.4",
-    "postgres": "^3.4.7",
+    "postgres": "^3.4.8",
     "primeicons": "^7.0.0",
     "primevue": "^4.5.4",
     "tailwind-merge": "^3.4.0",
@@ -41,13 +39,15 @@
     "vue-router": "^4.6.4",
     "zod": "^4.3.5"
   },
-  "packageManager": "pnpm@10.27.0",
+  "packageManager": "pnpm@10.28.0",
   "devDependencies": {
+    "drizzle-kit": "1.0.0-beta.10-42c284e",
+    "eslint-plugin-zod-x": "^2.0.1",
     "prettier": "^3.7.4",
-    "sass": "^1.97.1",
+    "sass": "^1.97.2",
     "sass-loader": "^16.0.6",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vue-tsc": "^3.2.1"
+    "vue-tsc": "^3.2.2"
   }
 }

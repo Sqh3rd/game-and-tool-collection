@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full h-full p-5 flex justify-center">
+  <div class="size-full p-5 flex justify-center">
     <div class="w-1/2 max-w-xl min-w-xs flex flex-col justify-center">
       <h1 class="text-xl font-semibold text-center pb-6">Log In</h1>
       <Form
@@ -35,7 +35,10 @@
             fluid
           />
         </div>
-        <Button type="submit" label="Log In" />
+        <Button
+          type="submit"
+          label="Log In"
+        />
         <span
           >Don't have an account yet? Then
           <NuxtLink
@@ -58,8 +61,7 @@ import InputText from "~/components/volt/InputText.vue";
 import Message from "~/components/volt/Message.vue";
 import Password from "~/components/volt/Password.vue";
 import { useGlobalSpinnerStore } from "~/stores/globalSpinner";
-import type { Login } from "~~/shared/types/common";
-import { isPrimitive } from "~~/shared/utils/type-assertions";
+import { serverErrorSchema, type Login } from "~~/shared/types/common";
 
 const ID = Symbol(this);
 
@@ -79,16 +81,12 @@ async function login(event: FormSubmitEvent) {
     await refreshSession();
     await navigateTo("/");
   } catch (e: unknown) {
-    if (
-      isPrimitive(e, "object")
-      && "data" in e
-      && isPrimitive(e.data, "object")
-      && "message" in e.data
-    ) {
+    const serverError = serverErrorSchema.safeParse(e);
+    if (serverError.success) {
       toast.add({
         severity: "error",
         summary: "Error",
-        detail: String(e.data.message),
+        detail: String(serverError.data.message),
         life: 3000,
       });
     } else {

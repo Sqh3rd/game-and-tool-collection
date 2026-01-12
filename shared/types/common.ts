@@ -1,6 +1,6 @@
-import { users } from "hub:db:schema";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import z from "zod";
+import { user } from "hub:db:schema";
+import * as z from "zod";
 
 // Mostly copy pasta from H3Error
 export const serverErrorSchema = z.object({
@@ -11,19 +11,10 @@ export const serverErrorSchema = z.object({
   statusCode: z.number(),
   fatal: z.boolean(),
   unhandled: z.boolean(),
-  statusMessage?: z.string().optional(),
-  data?: DataT;
-  cause?: unknown;
+  statusMessage: z.string().optional(),
+  data: z.unknown().optional(),
 });
-export type ServerError<DataT = unknown> = Error & {
-    statusCode: number;
-    fatal: boolean;
-    unhandled: boolean;
-    statusMessage?: string;
-    data?: DataT;
-    cause?: unknown;
-    toJSON(): Pick<ServerError<DataT>, "message" | "statusCode" | "statusMessage" | "data">;
-};
+export type ServerError = z.infer<typeof serverErrorSchema>;
 
 export const passwordSchema = z
   .string()
@@ -65,12 +56,12 @@ export const loginSchema = z.object({
 });
 export type Login = z.infer<typeof loginSchema>;
 
-export const userSchema = createSelectSchema(users)
+export const userSchema = createSelectSchema(user)
   .omit({ hashedPassword: true })
   .safeExtend({ email: z.email() });
 export type User = z.infer<typeof userSchema>;
 
-const tempNewUserSchema = createInsertSchema(users)
+const tempNewUserSchema = createInsertSchema(user)
   .omit({ hashedPassword: true })
   .safeExtend({
     email: z.email(),
