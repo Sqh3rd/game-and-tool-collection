@@ -1,4 +1,4 @@
-export const useGlobalSpinnerStore = defineStore(GLOBAL_SPINNER, () => {
+export const useSpinnerStore = defineStore("SPINNER", () => {
   // Properties
   const currentlyLoading = ref<symbol[]>([]);
 

@@ -10,7 +10,7 @@
 import "~/assets/css/main.css";
 import Spinner from "./components/global/Spinner.vue";
 import Toast from "./components/volt/Toast.vue";
-import { useGlobalSpinnerStore } from "./stores/globalSpinner";
+import { useSpinnerStore } from "./stores/spinner";
 
 useHeadSafe({
   title: "GaTC",
@@ -20,5 +20,5 @@ useHeadSafe({
   ],
 });
 
-const spinnerStore = useGlobalSpinnerStore();
+const spinnerStore = useSpinnerStore();
 </script>

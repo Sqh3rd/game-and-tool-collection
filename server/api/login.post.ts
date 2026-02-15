@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+import { user } from "hub:db:schema";
 
 export default defineEventHandler(async (event) => {
   const result = await readValidatedBody(event, loginSchema.safeParse);
@@ -13,15 +14,15 @@ export default defineEventHandler(async (event) => {
   const userQuery = await db.select().from(user).where(eq(user.email, email));
   if (userQuery.length === 0 || userQuery[0] == null) throw err;
 
-  const user = userQuery[0];
-  const isPwdValid = verifyPassword(user.hashedPassword, password);
+  const curUser = userQuery[0];
+  const isPwdValid = verifyPassword(curUser.hashedPassword, password);
   if (!isPwdValid) throw err;
 
-  if (passwordNeedsReHash(user.hashedPassword)) {
+  if (passwordNeedsReHash(curUser.hashedPassword)) {
     const newlyHashedPwd = await hashPassword(password);
     db.update(user)
       .set({ hashedPassword: newlyHashedPwd })
-      .where(eq(user.id, user.id));
+      .where(eq(user.uuid, curUser.uuid));
   }
 
   await setUserSession(event, { user: { email: user.email, name: user.name } });

@@ -5,7 +5,7 @@
       <Form
         v-slot="$form"
         :initial-values="userData"
-        :resolver="zodResolver(newUserSchema)"
+        :resolver="zodResolver(User.insertSchema)"
         class="flex flex-col justify-center gap-4"
         @submit="register"
       >
@@ -149,20 +149,20 @@
 </template>
 
 <script lang="ts" setup>
-import InputText from "~/components/volt/InputText.vue";
-import Password from "~/components/volt/Password.vue";
-import Button from "~/components/volt/Button.vue";
-import Message from "~/components/volt/Message.vue";
 import {
   Form,
   type FormFieldState,
   type FormSubmitEvent,
 } from "@primevue/forms";
 import { zodResolver } from "@primevue/forms/resolvers/zod";
-import type { $ZodIssue } from "zod/v4/core";
-import Divider from "~/components/volt/Divider.vue";
 import { useToast, type PasswordPassThroughMethodOptions } from "primevue";
-import { serverErrorSchema } from "~~/shared/types/common";
+import type { $ZodIssue } from "zod/v4/core";
+import Button from "~/components/volt/Button.vue";
+import Divider from "~/components/volt/Divider.vue";
+import InputText from "~/components/volt/InputText.vue";
+import Message from "~/components/volt/Message.vue";
+import Password from "~/components/volt/Password.vue";
+import { serverErrorSchema, User } from "~~/shared/types/db";
 
 const MASK_ICON_CLASSES =
   "pi pi-eye end-3 text-surface-500 dark:text-surface-400 absolute top-1/2 -mt-2 w-4 h-4";
@@ -185,7 +185,7 @@ const ptTogglePasswordMasked = computed(() => {
   };
 });
 
-const userData = ref<NewUser>({
+const userData = ref<User.Insert>({
   email: "",
   name: "",
   password: "",
@@ -227,7 +227,7 @@ const confirmPasswordValid = (
 
 async function register(event: FormSubmitEvent) {
   if (!event.valid) return;
-  if (!newUserSchema.safeParse(event.values)) return;
+  if (!User.insertSchema.safeParse(event.values)) return;
   startLoad(ID);
   try {
     await $fetch("/api/register", { method: "POST", body: event.values });

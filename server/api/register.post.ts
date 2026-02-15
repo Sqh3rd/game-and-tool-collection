@@ -1,11 +1,11 @@
 import { eq } from "drizzle-orm";
 import { user } from "hub:db:schema";
-import { newUserSchema } from "~~/shared/types/common";
+import { User } from "~~/shared/types/db";
 
 export default defineEventHandler(async (event) => {
   const { email, name, password, confirmPassword } = await readValidatedBody(
     event,
-    newUserSchema.parse,
+    User.insertSchema.parse,
   );
 
   const usersWithSameEmail = await db

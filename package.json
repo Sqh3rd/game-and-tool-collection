@@ -14,19 +14,18 @@
     "prettier:fix": "prettier . --write"
   },
   "dependencies": {
-    "@electric-sql/pglite": "^0.3.14",
+    "@electric-sql/pglite": "^0.3.15",
     "@nuxt/eslint": "1.12.1",
-    "@nuxthub/core": "0.10.4",
+    "@nuxthub/core": "link:..\\..\\..\\..\\AppData\\Local\\pnpm\\global\\5\\node_modules\\@nuxthub\\core",
     "@pinia/nuxt": "0.11.3",
     "@primevue/core": "^4.5.4",
     "@primevue/forms": "^4.5.4",
     "@tailwindcss/vite": "^4.1.18",
     "@vueuse/nuxt": "14.1.0",
     "dotenv": "^17.2.3",
-    "drizzle-orm": "1.0.0-beta.10-42c284e",
-    "drizzle-zod": "1.0.0-beta.10-42c284e",
+    "drizzle-orm": "1.0.0-beta.15-859cf75",
     "eslint": "^9.39.2",
-    "nuxt": "^4.2.2",
+    "nuxt": "^4.3.0",
     "nuxt-auth-utils": "0.5.26",
     "pinia": "^3.0.4",
     "postgres": "^3.4.8",
@@ -35,19 +34,19 @@
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
     "tailwindcss-primeui": "^0.6.1",
-    "vue": "^3.5.26",
+    "vue": "^3.5.27",
     "vue-router": "^4.6.4",
-    "zod": "^4.3.5"
+    "zod": "^4.3.6"
   },
-  "packageManager": "pnpm@10.28.0",
+  "packageManager": "pnpm@10.29.3",
   "devDependencies": {
-    "drizzle-kit": "1.0.0-beta.10-42c284e",
-    "eslint-plugin-zod-x": "^2.0.1",
-    "prettier": "^3.7.4",
-    "sass": "^1.97.2",
+    "drizzle-kit": "1.0.0-beta.15-859cf75",
+    "eslint-plugin-zod": "^3.0.2",
+    "prettier": "^3.8.1",
+    "sass": "^1.97.3",
     "sass-loader": "^16.0.6",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vue-tsc": "^3.2.2"
+    "vue-tsc": "^3.2.3"
   }
 }

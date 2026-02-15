@@ -1,8 +1,8 @@
-import { integer, numeric, pgTable } from "drizzle-orm/pg-core";
+import { integer, pgTable, real } from "drizzle-orm/pg-core";
 import { timestamps } from "../../helpers/timestamps";
 
 export const recipe = pgTable("fagrc_recipe", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  duration: numeric(),
+  duration: real(),
   ...timestamps,
 });

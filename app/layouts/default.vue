@@ -1,7 +1,7 @@
 <template>
-  <div class="size-full">
+  <div class="h-screen w-full flex flex-col">
     <Toolbar
-      class="sticky top-0 rounded-none border-0 border-b-2 h-20 w-full z-1000"
+      class="rounded-none border-0 border-b-2 h-20 w-full"
       pt:start:class="gap-2"
       pt:end:class="gap-2"
     >
@@ -10,8 +10,8 @@
           class="px-3"
           to="/"
         >
-          <CustomIcon
-            svg="main"
+          <IconCustom
+            icon="main"
             class="w-10 h-10 fill-primary"
           />
         </NuxtLink>
@@ -127,7 +127,7 @@
 
 <script setup lang="ts">
 import { PrimeIcons } from "@primevue/core";
-import CustomIcon from "~/components/global/CustomIcon.vue";
+import IconCustom from "~/components/icons/IconCustom.vue";
 import ButtonGroup from "~/components/volt/ButtonGroup.vue";
 import Menu from "~/components/volt/Menu.vue";
 import SecondaryButton from "~/components/volt/SecondaryButton.vue";

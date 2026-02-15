@@ -2,3 +2,6 @@ onlyBuiltDependencies:
   - '@parcel/watcher'
   - esbuild
   - unrs-resolver
+
+overrides:
+  '@nuxthub/core': link:../../../../AppData/Local/pnpm/global/5/node_modules/@nuxthub/core

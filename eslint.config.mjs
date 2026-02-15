@@ -1,9 +1,10 @@
 // @ts-check
-import withNuxt from "./.nuxt/eslint.config.mjs";
+import eslintPluginZod from "eslint-plugin-zod";
 import { globalIgnores } from "eslint/config";
-import eslintPluginZodX from "eslint-plugin-zod-x";
+import withNuxt from "./.nuxt/eslint.config.mjs";
 
 export default withNuxt([
   globalIgnores(["./app/components/volt/**/*"]),
-  eslintPluginZodX.configs.recommended,
+  eslintPluginZod.configs.recommended,
+  { rules: { "@typescript-eslint/no-namespace": "off" } },
 ]);

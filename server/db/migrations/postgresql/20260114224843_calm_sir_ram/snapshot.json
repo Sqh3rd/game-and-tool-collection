@@ -1,9 +1,9 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "5a9a7496-5111-4fb2-aaeb-8eb6ab7b135b",
+  "id": "aa9a530b-09c5-461a-836a-80f39043b64f",
   "prevIds": [
-    "9baaf5b6-307f-458c-801e-b1fb787ca624"
+    "00000000-0000-0000-0000-000000000000"
   ],
   "ddl": [
     {
@@ -11,13 +11,25 @@
         "IN",
         "OUT"
       ],
-      "name": "quantity_type",
+      "name": "junction_processable_recipe_type",
       "entityType": "enums",
       "schema": "public"
     },
     {
       "isRlsEnabled": false,
       "name": "fagrc_game",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "fagrc_junction_processable_recipe",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "fagrc_junction_processor_recipe",
       "entityType": "tables",
       "schema": "public"
     },
@@ -35,7 +47,7 @@
     },
     {
       "isRlsEnabled": false,
-      "name": "fagrc_quantity",
+      "name": "fagrc_processor",
       "entityType": "tables",
       "schema": "public"
     },
@@ -94,19 +106,6 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "icon_link",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "fagrc_game"
-    },
-    {
-      "type": "varchar",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
       "name": "description",
       "entityType": "columns",
       "schema": "public",
@@ -126,11 +125,24 @@
       "table": "fagrc_game"
     },
     {
-      "type": "timestamp",
+      "type": "varchar",
       "typeSchema": null,
       "notNull": false,
       "dimensions": 0,
       "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "wiki_link",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_game"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
       "generated": null,
       "identity": null,
       "name": "updated_at",
@@ -150,6 +162,149 @@
       "entityType": "columns",
       "schema": "public",
       "table": "fagrc_game"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "recipe_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_junction_processable_recipe"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "processable_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_junction_processable_recipe"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "quantity",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_junction_processable_recipe"
+    },
+    {
+      "type": "varchar",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "measurement",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_junction_processable_recipe"
+    },
+    {
+      "type": "junction_processable_recipe_type",
+      "typeSchema": "public",
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "type",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_junction_processable_recipe"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_junction_processable_recipe"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_junction_processable_recipe"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "recipe_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_junction_processor_recipe"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "processor_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_junction_processor_recipe"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_junction_processor_recipe"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_junction_processor_recipe"
     },
     {
       "type": "integer",
@@ -182,19 +337,6 @@
       "generated": null,
       "identity": null,
       "name": "name",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "fagrc_mod"
-    },
-    {
-      "type": "varchar",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "icon_link",
       "entityType": "columns",
       "schema": "public",
       "table": "fagrc_mod"
@@ -241,9 +383,9 @@
     {
       "type": "timestamp",
       "typeSchema": null,
-      "notNull": false,
+      "notNull": true,
       "dimensions": 0,
-      "default": null,
+      "default": "now()",
       "generated": null,
       "identity": null,
       "name": "updated_at",
@@ -307,19 +449,6 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "icon_link",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "fagrc_processable"
-    },
-    {
-      "type": "varchar",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
       "name": "description",
       "entityType": "columns",
       "schema": "public",
@@ -367,9 +496,9 @@
     {
       "type": "timestamp",
       "typeSchema": null,
-      "notNull": false,
+      "notNull": true,
       "dimensions": 0,
-      "default": null,
+      "default": "now()",
       "generated": null,
       "identity": null,
       "name": "updated_at",
@@ -389,19 +518,6 @@
       "entityType": "columns",
       "schema": "public",
       "table": "fagrc_processable"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "recipe_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "fagrc_quantity"
     },
     {
       "type": "integer",
@@ -414,59 +530,46 @@
       "name": "processable_id",
       "entityType": "columns",
       "schema": "public",
-      "table": "fagrc_quantity"
+      "table": "fagrc_processor"
     },
     {
-      "type": "integer",
+      "type": "real",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "quantity",
+      "name": "energy_consumption",
       "entityType": "columns",
       "schema": "public",
-      "table": "fagrc_quantity"
+      "table": "fagrc_processor"
     },
     {
-      "type": "varchar",
+      "type": "real",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "measurement",
+      "name": "crafting_speed",
       "entityType": "columns",
       "schema": "public",
-      "table": "fagrc_quantity"
-    },
-    {
-      "type": "quantity_type",
-      "typeSchema": "public",
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "type",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "fagrc_quantity"
+      "table": "fagrc_processor"
     },
     {
       "type": "timestamp",
       "typeSchema": null,
-      "notNull": false,
+      "notNull": true,
       "dimensions": 0,
-      "default": null,
+      "default": "now()",
       "generated": null,
       "identity": null,
       "name": "updated_at",
       "entityType": "columns",
       "schema": "public",
-      "table": "fagrc_quantity"
+      "table": "fagrc_processor"
     },
     {
       "type": "timestamp",
@@ -479,7 +582,7 @@
       "name": "created_at",
       "entityType": "columns",
       "schema": "public",
-      "table": "fagrc_quantity"
+      "table": "fagrc_processor"
     },
     {
       "type": "integer",
@@ -504,7 +607,7 @@
       "table": "fagrc_recipe"
     },
     {
-      "type": "numeric",
+      "type": "real",
       "typeSchema": null,
       "notNull": false,
       "dimensions": 0,
@@ -519,9 +622,9 @@
     {
       "type": "timestamp",
       "typeSchema": null,
-      "notNull": false,
+      "notNull": true,
       "dimensions": 0,
-      "default": null,
+      "default": "now()",
       "generated": null,
       "identity": null,
       "name": "updated_at",
@@ -543,23 +646,14 @@
       "table": "fagrc_recipe"
     },
     {
-      "type": "integer",
+      "type": "uuid",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
-      "default": null,
+      "default": "gen_random_uuid()",
       "generated": null,
-      "identity": {
-        "type": "always",
-        "name": "user_id_seq",
-        "increment": "1",
-        "startWith": "1",
-        "minValue": "1",
-        "maxValue": "2147483647",
-        "cache": 1,
-        "cycle": false
-      },
-      "name": "id",
+      "identity": null,
+      "name": "uuid",
       "entityType": "columns",
       "schema": "public",
       "table": "user"
@@ -606,9 +700,9 @@
     {
       "type": "timestamp",
       "typeSchema": null,
-      "notNull": false,
+      "notNull": true,
       "dimensions": 0,
-      "default": null,
+      "default": "now()",
       "generated": null,
       "identity": null,
       "name": "updated_at",
@@ -674,6 +768,74 @@
     {
       "nameExplicit": false,
       "columns": [
+        "recipe_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "fagrc_recipe",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "name": "fagrc_junction_processable_recipe_zqKrvwQbEG4n_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "fagrc_junction_processable_recipe"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "processable_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "fagrc_processable",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "name": "fagrc_junction_processable_recipe_cwOwZto6Fxnv_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "fagrc_junction_processable_recipe"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "recipe_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "fagrc_recipe",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "name": "fagrc_junction_processor_recipe_recipe_id_fagrc_recipe_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "fagrc_junction_processor_recipe"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "processor_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "fagrc_processor",
+      "columnsTo": [
+        "processable_id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "name": "fagrc_junction_processor_recipe_AVVCp8algE4m_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "fagrc_junction_processor_recipe"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
         "game_id"
       ],
       "schemaTo": "public",
@@ -725,36 +887,19 @@
     {
       "nameExplicit": false,
       "columns": [
-        "recipe_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "fagrc_recipe",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "name": "fagrc_quantity_recipe_id_fagrc_recipe_id_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "fagrc_quantity"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
         "processable_id"
       ],
       "schemaTo": "public",
-      "tableTo": "fagrc_recipe",
+      "tableTo": "fagrc_processable",
       "columnsTo": [
         "id"
       ],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
-      "name": "fagrc_quantity_processable_id_fagrc_recipe_id_fkey",
+      "name": "fagrc_processor_processable_id_fagrc_processable_id_fkey",
       "entityType": "fks",
       "schema": "public",
-      "table": "fagrc_quantity"
+      "table": "fagrc_processor"
     },
     {
       "columns": [
@@ -762,10 +907,21 @@
         "processable_id"
       ],
       "nameExplicit": false,
-      "name": "fagrc_quantity_pkey",
+      "name": "fagrc_junction_processable_recipe_pkey",
       "entityType": "pks",
       "schema": "public",
-      "table": "fagrc_quantity"
+      "table": "fagrc_junction_processable_recipe"
+    },
+    {
+      "columns": [
+        "recipe_id",
+        "processor_id"
+      ],
+      "nameExplicit": false,
+      "name": "fagrc_junction_processor_recipe_pkey",
+      "entityType": "pks",
+      "schema": "public",
+      "table": "fagrc_junction_processor_recipe"
     },
     {
       "columns": [
@@ -799,6 +955,16 @@
     },
     {
       "columns": [
+        "processable_id"
+      ],
+      "nameExplicit": false,
+      "name": "fagrc_processor_pkey",
+      "schema": "public",
+      "table": "fagrc_processor",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
         "id"
       ],
       "nameExplicit": false,
@@ -809,7 +975,7 @@
     },
     {
       "columns": [
-        "id"
+        "uuid"
       ],
       "nameExplicit": false,
       "name": "user_pkey",

@@ -8,7 +8,6 @@ export const processable = pgTable(
   {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     name: varchar().notNull().unique(),
-    iconLink: varchar().notNull(),
     description: varchar().notNull(),
     energyValue: real().notNull().default(0),
     gameId: integer()

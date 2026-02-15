@@ -12,11 +12,13 @@
         <Card
           class="size-full cursor-pointer border-2 border-transparent duration-100 hover:border-primary-150 dark:hover:border-primary-600 hover:-translate-y-2"
         >
-          <template #header
-            ><CustomIcon
-              svg="main"
-              class="stroke-2 fill-transparent stroke-surface-400 hover:animate-trace"
-          /></template>
+          <template #header>
+            <IconCustom
+              icon="main"
+              class="stroke-2 fill-transparent stroke-surface-400 p-5 h-30 w-full"
+            />
+            <Divider align="top" />
+          </template>
           <template #title>{{ tool.title }}</template>
           <template #subtitle>{{ tool.subtitle }}</template>
           <template #content>{{ tool.description }}</template>
@@ -27,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import CustomIcon from "~/components/global/CustomIcon.vue";
+import IconCustom from "~/components/icons/IconCustom.vue";
 import Card from "~/components/volt/Card.vue";
 import Divider from "~/components/volt/Divider.vue";
 

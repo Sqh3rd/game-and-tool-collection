@@ -1,12 +1,16 @@
 <template>
-  <SideMenu
-    :expanded="true"
-    :items=""
-  >
+  <NuxtLayout name="fagrc">
     <NuxtPage />
-  </SideMenu>
+  </NuxtLayout>
 </template>
 
 <script setup lang="ts">
-import SideMenu from "~/layouts/side-menu.vue";
+const ID = Symbol(this);
+
+const fagrcStore = useFagrcStore();
+const spinnerStore = useSpinnerStore();
+
+spinnerStore.startLoad(ID);
+fagrcStore.loadGames();
+spinnerStore.endLoad(ID);
 </script>

@@ -1,15 +1,17 @@
 <template>
   <div
     class="absolute top-0 bottom-0 left-0 right-0 flex flex-col justify-center items-center opacity-50 bg-surface-200 dark:bg-surface-700 z-99999"
+    role="progressbar"
   >
-    <CustomIcon
-      svg="main"
+    <IconCustom
+      icon="main"
       class="w-20 h-20 fill-none stroke-primary stroke-2 spinner"
     />
   </div>
 </template>
 
 <script lang="ts" setup>
+import IconCustom from "../icons/IconCustom.vue";
 </script>
 
 <style lang="css">
@@ -25,7 +27,6 @@ svg.spinner {
   50% {
     stroke-dashoffset: 50px;
   }
-
   100% {
     stroke-dashoffset: 0px;
   }

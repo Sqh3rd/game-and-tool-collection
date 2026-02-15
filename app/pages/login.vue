@@ -60,13 +60,13 @@ import Button from "~/components/volt/Button.vue";
 import InputText from "~/components/volt/InputText.vue";
 import Message from "~/components/volt/Message.vue";
 import Password from "~/components/volt/Password.vue";
-import { useGlobalSpinnerStore } from "~/stores/globalSpinner";
-import { serverErrorSchema, type Login } from "~~/shared/types/common";
+import { useSpinnerStore } from "~/stores/spinner";
+import { loginSchema, serverErrorSchema, type Login } from "~~/shared/types/db";
 
 const ID = Symbol(this);
 
 const { fetch: refreshSession } = useUserSession();
-const { startLoad, endLoad } = useGlobalSpinnerStore();
+const { startLoad, endLoad } = useSpinnerStore();
 const credentials = ref<Login>({ email: "", password: "" });
 const toast = useToast();
 

@@ -1,6 +1,11 @@
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+} from "drizzle-orm/zod";
 import { user } from "hub:db:schema";
 import * as z from "zod";
+import { timestampMask } from "./helpers";
 
 // Mostly copy pasta from H3Error
 export const serverErrorSchema = z.object({
@@ -56,32 +61,38 @@ export const loginSchema = z.object({
 });
 export type Login = z.infer<typeof loginSchema>;
 
-export const userSchema = createSelectSchema(user)
-  .omit({ hashedPassword: true })
-  .safeExtend({ email: z.email() });
-export type User = z.infer<typeof userSchema>;
+export namespace User {
+  export const selectSchema = createSelectSchema(user)
+    .omit({ hashedPassword: true, uuid: true })
+    .safeExtend({ email: z.email() });
 
-const tempNewUserSchema = createInsertSchema(user)
-  .omit({ hashedPassword: true })
-  .safeExtend({
-    email: z.email(),
-    name: z
-      .string()
-      .trim()
-      .min(3, { error: "Must be at least 3 characters long" }),
-    password: passwordSchema,
-    confirmPassword: z.string().min(1, { error: "Field is required" }),
-  });
-export const newUserSchema = tempNewUserSchema.refine(
-  (data) => data.password === data.confirmPassword,
-  {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-    when(payload) {
-      return tempNewUserSchema
-        .pick({ password: true, confirmPassword: true })
-        .safeParse(payload.value).success;
+  export type Select = z.infer<typeof selectSchema>;
+
+  const tempInsertSchema = createInsertSchema(user)
+    .omit({ hashedPassword: true })
+    .safeExtend({
+      email: z.email(),
+      name: z
+        .string()
+        .trim()
+        .min(3, { error: "Must be at least 3 characters long" }),
+      password: passwordSchema,
+      confirmPassword: z.string().min(1, { error: "Field is required" }),
+    });
+  export const insertSchema = tempInsertSchema.refine(
+    (data) => data.password === data.confirmPassword,
+    {
+      message: "Passwords do not match",
+      path: ["confirmPassword"],
+      when(payload) {
+        return tempInsertSchema
+          .pick({ password: true, confirmPassword: true })
+          .safeParse(payload.value).success;
+      },
     },
-  },
-);
-export type NewUser = z.infer<typeof newUserSchema>;
+  );
+  export type Insert = z.infer<typeof insertSchema>;
+
+  export const updateSchema = createUpdateSchema(user).omit(timestampMask);
+  export type Update = z.infer<typeof updateSchema>;
+}
