@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_PASSWORD: root
     volumes:
-      - db-data:/etc/data
+      - db-data:/var/lib/postgresql
 
 volumes:
   db-data:

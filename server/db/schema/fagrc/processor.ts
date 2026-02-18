@@ -1,9 +1,9 @@
-import { defineRelations } from "drizzle-orm";
-import { integer, pgTable, real } from "drizzle-orm/pg-core";
-import { processable } from "hub:db:schema";
+import { integer, real } from "drizzle-orm/pg-core";
+import { processable } from ".";
+import { fagrcTable } from "../../helpers/tableCreators";
 import { timestamps } from "../../helpers/timestamps";
 
-export const processor = pgTable("fagrc_processor", {
+export const processor = fagrcTable("processor", {
   processableId: integer()
     .primaryKey()
     .references(() => processable.id),
@@ -11,15 +11,3 @@ export const processor = pgTable("fagrc_processor", {
   craftingSpeed: real().notNull(),
   ...timestamps,
 });
-
-export const processorRelations = defineRelations(
-  { processor, processable },
-  (r) => ({
-    processor: {
-      entity: r.one.processable({
-        from: r.processor.processableId,
-        to: r.processable.id,
-      }),
-    },
-  }),
-);

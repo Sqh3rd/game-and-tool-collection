@@ -1,7 +1,7 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "aa9a530b-09c5-461a-836a-80f39043b64f",
+  "id": "4138492a-78f0-49f4-8363-dcf5fdad7fe5",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
@@ -11,13 +11,19 @@
         "IN",
         "OUT"
       ],
-      "name": "junction_processable_recipe_type",
+      "name": "fagrc_junction_processable_recipe_type",
       "entityType": "enums",
       "schema": "public"
     },
     {
       "isRlsEnabled": false,
       "name": "fagrc_game",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "fagrc_icon",
       "entityType": "tables",
       "schema": "public"
     },
@@ -138,6 +144,19 @@
       "table": "fagrc_game"
     },
     {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "icon_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_game"
+    },
+    {
       "type": "timestamp",
       "typeSchema": null,
       "notNull": true,
@@ -162,6 +181,80 @@
       "entityType": "columns",
       "schema": "public",
       "table": "fagrc_game"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": {
+        "type": "always",
+        "name": "fagrc_icon_id_seq",
+        "increment": "1",
+        "startWith": "1",
+        "minValue": "1",
+        "maxValue": "2147483647",
+        "cache": 1,
+        "cycle": false
+      },
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_icon"
+    },
+    {
+      "type": "varchar",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "name",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_icon"
+    },
+    {
+      "type": "varchar",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "svg",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_icon"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_icon"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_icon"
     },
     {
       "type": "integer",
@@ -216,7 +309,7 @@
       "table": "fagrc_junction_processable_recipe"
     },
     {
-      "type": "junction_processable_recipe_type",
+      "type": "fagrc_junction_processable_recipe_type",
       "typeSchema": "public",
       "notNull": false,
       "dimensions": 0,
@@ -381,6 +474,19 @@
       "table": "fagrc_mod"
     },
     {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "icon_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_mod"
+    },
+    {
       "type": "timestamp",
       "typeSchema": null,
       "notNull": true,
@@ -489,6 +595,19 @@
       "generated": null,
       "identity": null,
       "name": "mod_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_processable"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "icon_id",
       "entityType": "columns",
       "schema": "public",
       "table": "fagrc_processable"
@@ -615,6 +734,19 @@
       "generated": null,
       "identity": null,
       "name": "duration",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "fagrc_recipe"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "icon_id",
       "entityType": "columns",
       "schema": "public",
       "table": "fagrc_recipe"
@@ -768,6 +900,23 @@
     {
       "nameExplicit": false,
       "columns": [
+        "icon_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "fagrc_icon",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "name": "fagrc_game_icon_id_fagrc_icon_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "fagrc_game"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
         "recipe_id"
       ],
       "schemaTo": "public",
@@ -853,6 +1002,23 @@
     {
       "nameExplicit": false,
       "columns": [
+        "icon_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "fagrc_icon",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "name": "fagrc_mod_icon_id_fagrc_icon_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "fagrc_mod"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
         "game_id"
       ],
       "schemaTo": "public",
@@ -887,6 +1053,23 @@
     {
       "nameExplicit": false,
       "columns": [
+        "icon_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "fagrc_icon",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "name": "fagrc_processable_icon_id_fagrc_icon_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "fagrc_processable"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
         "processable_id"
       ],
       "schemaTo": "public",
@@ -900,6 +1083,23 @@
       "entityType": "fks",
       "schema": "public",
       "table": "fagrc_processor"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "icon_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "fagrc_icon",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "name": "fagrc_recipe_icon_id_fagrc_icon_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "fagrc_recipe"
     },
     {
       "columns": [
@@ -931,6 +1131,16 @@
       "name": "fagrc_game_pkey",
       "schema": "public",
       "table": "fagrc_game",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "fagrc_icon_pkey",
+      "schema": "public",
+      "table": "fagrc_icon",
       "entityType": "pks"
     },
     {
@@ -992,6 +1202,17 @@
       "name": "fagrc_game_name_key",
       "schema": "public",
       "table": "fagrc_game",
+      "entityType": "uniques"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "svg"
+      ],
+      "nullsNotDistinct": false,
+      "name": "fagrc_icon_svg_key",
+      "schema": "public",
+      "table": "fagrc_icon",
       "entityType": "uniques"
     },
     {

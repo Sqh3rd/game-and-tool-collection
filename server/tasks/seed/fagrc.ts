@@ -5,6 +5,7 @@ import type {
 } from "drizzle-orm/pg-core";
 import {
   game,
+  icon,
   junctionProcessorRecipe,
   mod,
   processable,
@@ -18,6 +19,7 @@ import type {
 } from "~~/server/utils/types";
 import type {
   Game,
+  Icon,
   Mod,
   Processable,
   Processor,
@@ -37,6 +39,7 @@ export default defineTask({
   },
   async run() {
     const inserts = [
+      insert({ table: icon, data: initialIcons, name: "Icon" }),
       insert({ table: game, data: initialGames, name: "Game" }),
       insert({ table: mod, data: initialMods, name: "Mod" }),
       insert({
@@ -62,7 +65,10 @@ export default defineTask({
       console.log(`Inserting entries into table '${it.name}'`);
       const start = new Date();
       const result = (
-        await db.insert(it.table).values(it.data).onConflictDoNothing()
+        await db
+          .insert(it.table)
+          .values(it.data)
+          .returning({ createdAt: it.table.createdAt })
       ).length;
       console.log(
         `Successfully inserted ${result} rows in ${new Date().getMilliseconds() - start.getMilliseconds()}ms`,
@@ -72,23 +78,42 @@ export default defineTask({
   },
 });
 
+const initialIcons: Icon.Insert[] = [
+  // Placeholder
+  { name: "Placeholder Icon", svg: "" },
+
+  // Initial Game Icons
+  { name: "Factorio Icon", svg: "" },
+  { name: "Dyson Sphere Program Icon", svg: "" },
+  { name: "Desynced Icon", svg: "" },
+  { name: "Satisfactory Icon", svg: "" },
+];
+
 const initialGames: Game.Insert[] = [
   {
     name: "Factorio",
     description: "You know what it is",
     link: "https://factorio.com/",
     wikiLink: "https://wiki.factorio.com/",
+    iconId: 1,
   },
   {
     name: "Dyson Sphere Program",
     description: "DSP",
     link: "https://store.steampowered.com/app/1366540/Dyson_Sphere_Program/",
+    iconId: 2,
   },
-  { name: "Desynced", description: "", link: "https://www.desyncedgame.com/" },
+  {
+    name: "Desynced",
+    description: "",
+    link: "https://www.desyncedgame.com/",
+    iconId: 3,
+  },
   {
     name: "Satisfactory",
     description: "",
     link: "https://www.satisfactorygame.com/",
+    iconId: 4,
   },
 ];
 
@@ -102,24 +127,38 @@ const initialMods: Mod.Insert[] = [
 ];
 
 const initialProcessables: Processable.Insert[] = [
-  { name: "Stone furnace", description: "Basic furnace", gameId: 1 },
+  { name: "Stone furnace", description: "Basic furnace", gameId: 1, iconId: 0 },
   {
     name: "Iron Ore",
     description: "One of the most basic resources",
     gameId: 1,
+    iconId: 0,
   },
   {
     name: "Copper Ore",
     description: "One of the most basic resources",
     gameId: 1,
+    iconId: 0,
   },
   {
     name: "Iron plate",
     description: "One of the most basic resources",
     gameId: 1,
+    iconId: 0,
   },
-  { name: "Stone", description: "One of the most basic resources", gameId: 1 },
-  { name: "Coal", description: "Basic fuel", gameId: 1, energyValue: 4e6 },
+  {
+    name: "Stone",
+    description: "One of the most basic resources",
+    gameId: 1,
+    iconId: 0,
+  },
+  {
+    name: "Coal",
+    description: "Basic fuel",
+    gameId: 1,
+    energyValue: 4e6,
+    iconId: 0,
+  },
 ];
 
 const initialRecipes: Recipe.Insert[] = [{ duration: 0.5 }];

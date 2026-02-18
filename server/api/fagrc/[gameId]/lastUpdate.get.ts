@@ -1,5 +1,5 @@
-import { and, desc, eq, inArray, isNull, max, or, sql } from "drizzle-orm";
-import { processable, processor, recipe } from "hub:db:schema";
+import { and, eq, inArray, isNull, max, or, sql } from "drizzle-orm";
+import { processable } from "hub:db:schema";
 import * as z from "zod";
 
 const gameIdRouteParamSchema = singularIdParamSchema("gameId");
@@ -9,34 +9,67 @@ const modIdQueryParamSchema = z.object({
   entity: z.literal(["processable", "processor", "recipe"]),
 });
 
-const preparedStatemens = {
+const preparedStatemens = (
+  baseGame: boolean,
+  modIds: number[] | undefined,
+) => ({
   processable: db
     .select({ updatedAt: max(processable.updatedAt) })
     .from(processable)
     .where(
       and(
         eq(processable.gameId, sql.placeholder("gameId")),
-        or(sql.placeholder("isModIdNull"), sql.placeholder("isModIdInArray")),
+        or(
+          baseGame ? isNull(processable.modId) : undefined,
+          modIds ? inArray(processable.modId, modIds) : undefined,
+        ),
       ),
     )
-    .prepare("processable_last_update"),
+    .prepare("processableLastUpdate"),
 
   processor: db.query.processor
     .findFirst({
       columns: { updatedAt: true },
       with: { entity: true },
-      where: and(
-        eq(processable.gameId, sql.placeholder("gameId")),
-        or(sql.placeholder("isModIdNull"), sql.placeholder("isModIdInArray")),
-      ),
-      orderBy: desc(processor.updatedAt),
+      where: {
+        entity: {
+          AND: [
+            { gameId: sql.placeholder("gameId") },
+            {
+              OR: [
+                baseGame ? { modId: { isNull: true } } : {},
+                modIds ? { modId: { arrayContains: modIds } } : {},
+              ],
+            },
+          ],
+        },
+      },
+      orderBy: { updatedAt: "asc" },
     })
-    .prepare("processor_last_update"),
+    .prepare("processorLastUpdate"),
 
-  recipe: db
-    .select({ lastUpdate: max(recipe.updatedAt)})
-    .from(recipe)
-};
+  recipe: db.query.recipe
+    .findFirst({
+      columns: { updatedAt: true },
+      with: { ingredients: { with: { processable: true } } },
+      where: {
+        ingredients: {
+          processable: {
+            AND: [
+              { gameId: sql.placeholder("gameId") },
+              {
+                OR: [
+                  baseGame ? { modId: { isNull: true } } : {},
+                  modIds ? { modId: { arrayContains: modIds } } : {},
+                ],
+              },
+            ],
+          },
+        },
+      },
+    })
+    .prepare("recipeLastUpdate"),
+});
 
 export default defineEventHandler(async (event) => {
   const { gameId } = await getValidatedRouterParams(
@@ -48,5 +81,5 @@ export default defineEventHandler(async (event) => {
     modIdQueryParamSchema.parse,
   );
 
-  return preparedStatemens[entity];
+  return await preparedStatemens(baseGame, modIds)[entity].execute({ gameId });
 });

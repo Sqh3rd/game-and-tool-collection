@@ -3,9 +3,20 @@ import {
   createSelectSchema,
   createUpdateSchema,
 } from "drizzle-orm/zod";
-import { game, mod, processable, processor, recipe } from "hub:db:schema";
+import { game, icon, mod, processable, processor, recipe } from "hub:db:schema";
 import type * as z from "zod";
 import { timestampMask } from "./helpers";
+
+export namespace Icon {
+  export const selectSchema = createSelectSchema(icon);
+  export type Select = z.infer<typeof selectSchema>;
+
+  export const insertSchema = createInsertSchema(icon).omit(timestampMask);
+  export type Insert = z.infer<typeof insertSchema>;
+
+  export const updateSchema = createUpdateSchema(icon).omit(timestampMask);
+  export type Update = z.infer<typeof updateSchema>;
+}
 
 export namespace Game {
   export const selectSchema = createSelectSchema(game);

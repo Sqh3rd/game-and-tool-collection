@@ -171,7 +171,7 @@ const UNMASK_ICON_CLASSES =
 
 const ID = Symbol(this);
 
-const { startLoad, endLoad } = useGlobalSpinnerStore();
+const { startLoad, endLoad } = useSpinnerStore();
 const { fetch: refreshUserSession } = useUserSession();
 const [isPasswordMasked, togglePasswordMasked] = useToggle(true);
 

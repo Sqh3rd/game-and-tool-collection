@@ -11,6 +11,6 @@ const fagrcStore = useFagrcStore();
 const spinnerStore = useSpinnerStore();
 
 spinnerStore.startLoad(ID);
-fagrcStore.loadGames();
+await fagrcStore.loadGames();
 spinnerStore.endLoad(ID);
 </script>

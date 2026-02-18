@@ -1,9 +1,10 @@
-import { integer, pgTable, primaryKey } from "drizzle-orm/pg-core";
-import { processor, recipe } from "hub:db:schema";
+import { integer, primaryKey } from "drizzle-orm/pg-core";
+import { processor, recipe } from ".";
+import { fagrcTable } from "../../helpers/tableCreators";
 import { timestamps } from "../../helpers/timestamps";
 
-export const junctionProcessorRecipe = pgTable(
-  "fagrc_junction_processor_recipe",
+export const junctionProcessorRecipe = fagrcTable(
+  "junction_processor_recipe",
   {
     recipeId: integer()
       .notNull()

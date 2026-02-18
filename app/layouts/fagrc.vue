@@ -12,12 +12,12 @@
           <i
             v-if="isExpanded"
             class="pi pi-angle-double-left cursor-pointer"
-            @click.prevent="toggle"
+            @click.prevent="toggleExpanded()"
           />
           <i
             v-else
             class="pi pi-angle-double-right cursor-pointer"
-            @click.prevent="toggle"
+            @click.prevent="toggleExpanded()"
           />
         </div>
       </template>
@@ -27,7 +27,7 @@
           :key="game.name"
           :expanded="isExpanded"
           :label="game.name"
-          @click.prevent="() => item.onClick?.(item)"
+          @click.prevent="selectGame(game)"
         />
       </template>
     </SideMenu>
@@ -38,21 +38,16 @@
 <script setup lang="ts">
 import SideMenu from "~/components/global/sideMenu/SideMenu.vue";
 import SideMenuEntry from "~/components/global/sideMenu/SideMenuEntry.vue";
+import type { Game } from "~~/shared/types/db";
 
-const SIDEBAR_ID = Symbol("sidebar");
+const [isExpanded, toggleExpanded] = useToggle(true);
 
-export type SideMenuItem = {
-  label: string;
-  icon?: string;
-  onClick?: Consumer<SideMenuItem>;
-};
-
-const sideMenuStore = useSideMenuStore();
 const fagrcStore = useFagrcStore();
 
-sideMenuStore.registerSideMenu(SIDEBAR_ID, true);
-const isExpanded = sideMenuStore.getExpandedState(SIDEBAR_ID);
-const toggle = () => sideMenuStore.toggleExpanded(SIDEBAR_ID);
-
 const games = fagrcStore.games;
+
+const selectGame = (game: Game.Select) => {
+  fagrcStore.setCurrentGame(game);
+  toggleExpanded();
+};
 </script>

@@ -1,8 +1,9 @@
-import { integer, pgTable, varchar } from "drizzle-orm/pg-core";
+import { integer, varchar } from "drizzle-orm/pg-core";
+import { game, icon } from ".";
+import { fagrcTable } from "../../helpers/tableCreators";
 import { timestamps } from "../../helpers/timestamps";
-import { game } from "./game";
 
-export const mod = pgTable("fagrc_mod", {
+export const mod = fagrcTable("mod", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar().notNull().unique(),
   description: varchar(),
@@ -10,5 +11,6 @@ export const mod = pgTable("fagrc_mod", {
   gameId: integer()
     .notNull()
     .references(() => game.id),
+  iconId: integer().references(() => icon.id),
   ...timestamps,
 });

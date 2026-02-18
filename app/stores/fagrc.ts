@@ -42,8 +42,11 @@ export const useFagrcStore = defineStore("FAGRC", () => {
 
   const loadMods = async () => {
     if (!currentGame.value) return;
-    if (mods.has(currentGame.value.id)) {
-    }
+    const gameId = currentGame.value.id;
+    mods.set(
+      gameId,
+      await $fetch(`/api/fagrc/${gameId}/mods`, { method: "GET" }),
+    );
   };
 
   return {

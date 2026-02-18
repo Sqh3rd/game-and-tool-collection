@@ -4,6 +4,7 @@ export {
   serverErrorSchema,
   User,
   type Login,
-  type ServerError,
+  type ServerError
 } from "./common";
-export { Game, Mod, Processable, Processor, Recipe } from "./fagrc";
+export { Game, Icon, Mod, Processable, Processor, Recipe } from "./fagrc";
+

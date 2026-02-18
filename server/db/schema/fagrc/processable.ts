@@ -1,10 +1,10 @@
-import { index, integer, pgTable, real, varchar } from "drizzle-orm/pg-core";
+import { index, integer, real, varchar } from "drizzle-orm/pg-core";
+import { game, icon, mod } from ".";
+import { fagrcTable } from "../../helpers/tableCreators";
 import { timestamps } from "../../helpers/timestamps";
-import { game } from "./game";
-import { mod } from "./mod";
 
-export const processable = pgTable(
-  "fagrc_processable",
+export const processable = fagrcTable(
+  "processable",
   {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     name: varchar().notNull().unique(),
@@ -14,6 +14,9 @@ export const processable = pgTable(
       .notNull()
       .references(() => game.id),
     modId: integer().references(() => mod.id),
+    iconId: integer()
+      .notNull()
+      .references(() => icon.id),
     ...timestamps,
   },
   (table) => [
