@@ -9,7 +9,9 @@ export default defineNuxtConfig({
 
   nitro: { experimental: { tasks: true } },
   vite: { plugins: [tailwindcss()] },
-  hub: { db: { dialect: "postgresql", casing: "snake_case", useRelationsV2: true } },
+  hub: {
+    db: { dialect: "postgresql", casing: "snake_case", useRelationsV2: true },
+  },
 
   modules: [
     "nuxt-auth-utils",
@@ -17,5 +19,6 @@ export default defineNuxtConfig({
     "@nuxthub/core",
     "@vueuse/nuxt",
     "@nuxt/eslint",
+    "@nuxt/test-utils/module",
   ],
 });
