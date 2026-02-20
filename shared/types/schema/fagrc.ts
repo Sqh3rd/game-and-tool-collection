@@ -1,9 +1,16 @@
 import {
+  game,
+  icon,
+  mod,
+  processable,
+  processor,
+  recipe,
+} from "@nuxthub/db/schema";
+import {
   createInsertSchema,
   createSelectSchema,
   createUpdateSchema,
 } from "drizzle-orm/zod";
-import { game, icon, mod, processable, processor, recipe } from "hub:db:schema";
 import type * as z from "zod";
 import { timestampMask } from "./helpers";
 

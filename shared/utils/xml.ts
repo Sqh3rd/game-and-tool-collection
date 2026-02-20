@@ -1,4 +1,4 @@
-import type { RemovePrefix, WithPrefix } from "../helperTypes";
+import type { RemovePrefix, WithPrefix } from "./helperTypes";
 
 export type XMLAttributes = Record<string, string | undefined | boolean>;
 
