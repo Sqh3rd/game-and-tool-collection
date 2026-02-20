@@ -66,16 +66,26 @@ export type GetCase<S extends string> =
   : S extends `${UpperCaseLetter}${infer _}` ? "PascalCase" & Case
   : "camelCase" & Case;
 
-type SplitByCamelOrPascalCase<S extends string> =
-  S extends (
-    `${infer A}${infer UCL extends UpperCaseLetter}${infer LCL extends LowerCaseLetter}${infer Rest}`
-  ) ?
-    [Lowercase<A>, ...SplitByCamelOrPascalCase<`${UCL}${LCL}${Rest}`>]
+type SplitByCamelOrPascalCase<
+  S extends string,
+  CurrentSegment extends string = "",
+> =
+  S extends "" ? [Lowercase<CurrentSegment>]
   : S extends (
-    `${infer A}${infer LCL extends LowerCaseLetter}${infer UCL extends UpperCaseLetter}`
+    `${infer A extends UpperCaseLetter}${infer B extends LowerCaseLetter}${infer Rest}`
   ) ?
-    [Lowercase<`${A}${LCL}`>, Lowercase<UCL>]
-  : [Lowercase<S>];
+    IfThenElse<
+      Extends<CurrentSegment, "">,
+      SplitByCamelOrPascalCase<`${B}${Rest}`, A>,
+      [Lowercase<CurrentSegment>, ...SplitByCamelOrPascalCase<`${B}${Rest}`, A>]
+    >
+  : S extends (
+    `${infer A extends LowerCaseLetter}${infer B extends UpperCaseLetter}`
+  ) ?
+    [Lowercase<`${CurrentSegment}${A}`>, Lowercase<B>]
+  : S extends `${infer A}${infer Rest}` ?
+    SplitByCamelOrPascalCase<Rest, `${CurrentSegment}${A}`>
+  : [];
 
 type SplitByKebapCase<S extends string> =
   S extends `${infer A}-${infer Rest}` ?
@@ -103,7 +113,7 @@ type TupelToSeparatedString<
   CurrentIndex extends number[] = [],
 > =
   CurrentIndex["length"] extends S["length"] ? ""
-  : `${S[CurrentIndex["length"]]}${[...CurrentIndex, 0]["length"] extends S["length"] ? "" : Separator}${TupelToSeparatedString<S, Separator, [...CurrentIndex, 0]>}`;
+  : `${S[CurrentIndex["length"]]}${Separator}${TupelToSeparatedString<S, Separator, [...CurrentIndex, 0]>}`;
 type TupelToKebapCase<S extends string[]> = TupelToSeparatedString<S, "-">;
 type TupelToSnakeCase<S extends string[]> = TupelToSeparatedString<S, "_">;
 type ToCase<S extends string[], Target extends Case> =
@@ -118,3 +128,73 @@ export type ConvertCase<
   Target extends Case,
   Source extends Case = GetCase<S>,
 > = Target extends Source ? S : ToCase<SplitByCase<S, Source>, Target>;
+
+const getCase = <S extends string>(s: S): GetCase<S> => {
+  if (s.match(/^[^_]+_/)) return "snake_case" as GetCase<S>;
+  if (s.match(/^[^-]+-/)) return "kebap-case" as GetCase<S>;
+  if (s.match(/^[A-Z]/)) return "PascalCase" as GetCase<S>;
+  return "camelCase" as GetCase<S>;
+};
+
+const snake_case = getCase("snake_case");
+const kebapCase = getCase("kebap-case");
+const PascalCase = getCase("PascalCase");
+const camelCase = getCase("camelCase");
+
+const splitByCase = <S extends string>(s: S): SplitByCase<S> => {
+  const result: string[] = [];
+  let sectionStart = 0;
+  switch (getCase(s) as Case) {
+    case "camelCase":
+    case "PascalCase": {
+      let wasLastUpper = false;
+      for (let i = 1; i < s.length - 1; i++) {
+        const currentChar = s.charAt(i);
+        if (currentChar.match(/[a-z]/)) {
+          if (wasLastUpper) {
+            result.push(s.substring(sectionStart, i - 1).toLowerCase());
+            sectionStart = i - 1;
+          }
+          wasLastUpper = false;
+        } else if (currentChar.match(/[A-Z]/)) {
+          wasLastUpper = true;
+        }
+      }
+      if (!wasLastUpper && s.charAt(s.length - 1).match(/[a-z]/)) {
+        result.push(s.substring(sectionStart, s.length - 1).toLowerCase());
+        sectionStart = s.length - 1;
+      }
+      result.push(s.substring(sectionStart, s.length).toLowerCase());
+
+      break;
+    }
+    case "kebap-case": {
+      for (let i = 0; i < s.length; i++) {
+        const currentChar = s.charAt(i);
+        if (currentChar != "-") continue;
+        result.push(s.substring(sectionStart, i).toLowerCase());
+        sectionStart = i + 1;
+      }
+      break;
+    }
+    case "snake_case": {
+      for (let i = 0; i < s.length; i++) {
+        const currentChar = s.charAt(i);
+        if (currentChar != "_") continue;
+        result.push(s.substring(sectionStart, i).toLowerCase());
+        sectionStart = i + 1;
+      }
+      break;
+    }
+  }
+  return result.filter((it) => !!it) as SplitByCase<S>;
+};
+
+const splitCamelCase = splitByCase("camelCasE");
+
+const convertCase = <S extends string, Target extends Case>(
+  s: S,
+  target: Target,
+): ConvertCase<S, Target> => ({});
+
+const test = convertCase("somethingInCamelCase", "snake_case");

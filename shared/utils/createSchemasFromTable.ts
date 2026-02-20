@@ -15,7 +15,7 @@ import {
   type BuildSchema,
   type CoerceOptions,
 } from "drizzle-orm/zod";
-import type { UnionIsEmpty } from "./helperTypes";
+import type { ConvertCase, UnionIsEmpty } from "./helperTypes";
 
 type Schema = typeof schema;
 type Tables = {
@@ -38,9 +38,7 @@ type Relations =
 type GetRelationsForTable<TName extends keyof Tables> = Relations[TName
   & keyof Relations]["relations"];
 
-type Test = GetRelationsForTable<"game">;
-
-type GetTableNameFromRelation<
+type GetTableNameFromNameAndRelation<
   TName extends keyof Tables,
   RKey extends keyof GetRelationsForTable<TName>,
 > =
@@ -52,6 +50,13 @@ type GetTableNameFromRelation<
       TName
     : never
   : never;
+
+type Test = GetTableNameFromNameAndRelation<"recipe", "ingredients">;
+type Test2 =
+  GetRelationsForTable<"recipe">["ingredients"] extends Many<infer TName> ?
+    ConvertCase<TName, "snake_case">
+  : never;
+type Test3 = keyof Tables;
 
 type WithRelations<TName extends keyof Tables> = IfThenElse<
   UnionIsEmpty<keyof GetRelationsForTable<TName>>,
