@@ -1,13 +1,12 @@
-import type { db, schema } from "@nuxthub/db";
-import { recipe } from "@nuxthub/db/schema";
-import type {
-  IfThenElse,
-  Many,
-  One,
-  Table,
-  TablesRelationalConfig,
+import { relations, type Relations, type schema } from "@nuxthub/db";
+import {
+  isTable,
+  type IfThenElse,
+  type Many,
+  type One,
+  type Relation,
+  type Table,
 } from "drizzle-orm";
-import type { drizzle } from "drizzle-orm/postgres-js/driver";
 import {
   createInsertSchema,
   createSelectSchema,
@@ -24,22 +23,12 @@ type Tables = {
     ConvertCase<TTable["_"]["name"], "camelCase">
   : never]: Schema[Key];
 };
-type Relations =
-  typeof db extends (
-    ReturnType<
-      typeof drizzle<
-        Record<string, unknown>,
-        infer Relations extends TablesRelationalConfig
-      >
-    >
-  ) ?
-    {
-      [Key in keyof Relations as ConvertCase<Key, "camelCase">]: Relations[Key];
-    }
-  : never;
+type NicerRelations = {
+  [Key in keyof Relations as ConvertCase<Key, "camelCase">]: Relations[Key];
+};
 
-type GetRelationsForTable<TName extends keyof Tables> = Relations[TName
-  & keyof Relations]["relations"];
+type GetRelationsForTable<TName extends keyof Tables> = NicerRelations[TName
+  & keyof NicerRelations]["relations"];
 
 type GetTableNameFromNameAndRelation<
   TName extends keyof Tables,
@@ -108,14 +97,15 @@ export type SchemasFromTable<
   TTable extends Table,
   TName extends keyof Tables = TTable["_"]["name"] & keyof Tables,
 > = {
-  select: SelectSchema<TTable>;
-  insert: BuildSchema<
+  _: { table: TTable };
+  readonly select: SelectSchema<TTable>;
+  readonly insert: BuildSchema<
     "insert",
     TTable["_"]["columns"],
     undefined,
     CoerceOptions
   >;
-  update: BuildSchema<
+  readonly update: BuildSchema<
     "update",
     TTable["_"]["columns"],
     undefined,
@@ -123,32 +113,79 @@ export type SchemasFromTable<
   >;
   selectWithRelations: <SelectedRelations extends WithRelations<TName>>(
     selectedRelations: SelectedRelations,
-  ) => SelectSchema<TTable> & SchemaWithRelations<TName, SelectedRelations>;
+  ) => SchemaWithRelations<TName, SelectedRelations>;
 };
 
-export function createSchemasFromTable<TTable extends Table>(
-  table: TTable,
-): SchemasFromTable<TTable> {
+export function createSchemasFromTable<
+  TTable extends Table,
+  TName extends keyof Tables = TTable["_"]["name"] & keyof Tables,
+>(table: TTable): SchemasFromTable<TTable> {
+  const selectSchema = createSelectSchema(table);
+  const tableName = table._.name;
+  const validRelations =
+    tableName in relations ?
+      relations[tableName as keyof NicerRelations]
+    : undefined;
   return {
     select: createSelectSchema(table),
     insert: createInsertSchema(table),
     update: createUpdateSchema(table),
 
-    selectWithRelations: ({}) => ({}),
-  };
+    selectWithRelations: <SelectedRelations extends WithRelations<TName>>(
+      selectedRelations: SelectedRelations,
+    ) => {
+      if (!validRelations)
+        throw new Error(`No relations defined for table "${tableName}"`);
+      let selectWithRelationsSchema: z.ZodObject = selectSchema;
+      for (const srKey in selectedRelations) {
+        if (!(srKey in validRelations.relations))
+          throw new Error(
+            `No relation "${srKey}" found for table "${tableName}"`,
+          );
+        const currentRelation = validRelations.relations[
+          srKey as keyof typeof validRelations.relations
+        ] as Relation<string>;
+
+        const targetTable = currentRelation.targetTable;
+        if (!isTable(targetTable))
+          throw new Error(
+            `No valid target table "${currentRelation.targetTableName}" found for relation "${srKey}" of table "${tableName}"`,
+          );
+
+        const currentRelationSchema = createSchemasFromTable(targetTable);
+        const nestedSelectedRelations = selectedRelations[srKey];
+        const nestedSRKeys =
+          typeof nestedSelectedRelations === "object" ?
+            Object.keys(nestedSelectedRelations)
+          : [];
+        const nestedSchema =
+          nestedSRKeys.length ?
+            currentRelationSchema.selectWithRelations(
+              <never>nestedSelectedRelations,
+            )
+          : currentRelationSchema.select;
+
+        selectWithRelationsSchema = selectWithRelationsSchema.extend({
+          [srKey]:
+            currentRelation.relationType === "many" ?
+              z.array(nestedSchema)
+            : nestedSchema,
+        });
+      }
+      return selectWithRelationsSchema as SchemaWithRelations<
+        TName,
+        SelectedRelations
+      >;
+    },
+  } as SchemasFromTable<TTable>;
 }
 
-const recipeSchemas = createSchemasFromTable(recipe);
-const schemaWithRelations = recipeSchemas.selectWithRelations({
-  ingredients: { processable: true },
-  icon: true,
-});
-
-type T = z.infer<typeof schemaWithRelations>;
-
-const test: WithRelations<"icon"> = { a: "" };
-
-const ASchema = z.object({ a: z.string(), b: z.number() });
-const BSchema = z.object({ A: ASchema });
-
-type BSchemaType = z.infer<typeof BSchema>;
+type GetTableNameFromSchemas<T extends SchemasFromTable<Table>> =
+  T["_"]["table"]["_"]["name"] & keyof Tables;
+export type GetSelectSchema<T extends SchemasFromTable<Table>> = T["select"];
+export type GetInsertSchema<T extends SchemasFromTable<Table>> = T["insert"];
+export type GetUpdateSchema<T extends SchemasFromTable<Table>> = T["update"];
+export type GetSelectSchemaWithRelations<
+  T extends SchemasFromTable<Table>,
+  SelectedRelations extends WithRelations<GetTableNameFromSchemas<T>>,
+> = SchemaWithRelations<GetTableNameFromSchemas<T>, SelectedRelations>;

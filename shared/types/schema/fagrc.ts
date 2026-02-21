@@ -14,6 +14,9 @@ import {
 import type * as z from "zod";
 import { timestampMask } from "./helpers";
 
+export const iconSchemas = createSchemasFromTable(icon);
+export type Icon = typeof iconSchemas;
+
 export namespace Icon {
   export const selectSchema = createSelectSchema(icon);
   export type Select = z.infer<typeof selectSchema>;
