@@ -113,7 +113,7 @@ type TupelToSeparatedString<
   CurrentIndex extends number[] = [],
 > =
   CurrentIndex["length"] extends S["length"] ? ""
-  : `${S[CurrentIndex["length"]]}${Separator}${TupelToSeparatedString<S, Separator, [...CurrentIndex, 0]>}`;
+  : `${S[CurrentIndex["length"]]}${[...CurrentIndex, 0]["length"] extends S["length"] ? "" : Separator}${TupelToSeparatedString<S, Separator, [...CurrentIndex, 0]>}`;
 type TupelToKebapCase<S extends string[]> = TupelToSeparatedString<S, "-">;
 type TupelToSnakeCase<S extends string[]> = TupelToSeparatedString<S, "_">;
 type ToCase<S extends string[], Target extends Case> =
@@ -197,4 +197,4 @@ const convertCase = <S extends string, Target extends Case>(
   target: Target,
 ): ConvertCase<S, Target> => ({});
 
-const test = convertCase("somethingInCamelCase", "snake_case");
+const test = convertCase("somethingInCamelCase", "kebap-case");

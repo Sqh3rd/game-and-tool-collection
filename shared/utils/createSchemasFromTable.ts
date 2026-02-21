@@ -15,12 +15,13 @@ import {
   type BuildSchema,
   type CoerceOptions,
 } from "drizzle-orm/zod";
-import type { ConvertCase, UnionIsEmpty } from "./helperTypes";
+import * as z from "zod";
+import type { ConvertCase, Extends, UnionIsEmpty } from "./helperTypes";
 
 type Schema = typeof schema;
 type Tables = {
   [Key in keyof Schema as Schema[Key] extends infer TTable extends Table ?
-    TTable["_"]["name"]
+    ConvertCase<TTable["_"]["name"], "camelCase">
   : never]: Schema[Key];
 };
 type Relations =
@@ -32,7 +33,9 @@ type Relations =
       >
     >
   ) ?
-    Relations
+    {
+      [Key in keyof Relations as ConvertCase<Key, "camelCase">]: Relations[Key];
+    }
   : never;
 
 type GetRelationsForTable<TName extends keyof Tables> = Relations[TName
@@ -51,35 +54,61 @@ type GetTableNameFromNameAndRelation<
     : never
   : never;
 
-type Test = GetTableNameFromNameAndRelation<"recipe", "ingredients">;
-type Test2 =
-  GetRelationsForTable<"recipe">["ingredients"] extends Many<infer TName> ?
-    ConvertCase<TName, "snake_case">
-  : never;
-type Test3 = keyof Tables;
-
 type WithRelations<TName extends keyof Tables> = IfThenElse<
   UnionIsEmpty<keyof GetRelationsForTable<TName>>,
   never,
-  { [Key in keyof GetRelationsForTable<TName>]?: true }
+  {
+    [Key in keyof GetRelationsForTable<TName>]?:
+      | true
+      | WithRelations<GetTableNameFromNameAndRelation<TName, Key>>;
+  }
 >;
 
-type SelectWithRelationsHelper<TName extends keyof Tables> = IfThenElse<
-  UnionIsEmpty<keyof GetRelationsForTable<TName>>,
-  never,
-  "selectWithRelations"
+type SelectSchema<TTable extends Table> = BuildSchema<
+  "select",
+  TTable["_"]["columns"],
+  undefined,
+  CoerceOptions
 >;
+
+type SchemaWithRelations<
+  TName extends keyof Tables,
+  SelectedRelations extends WithRelations<TName>,
+> =
+  SelectSchema<Tables[TName]> extends z.ZodObject<infer Schema> ?
+    z.ZodObject<
+      Schema & {
+        [Key in keyof SelectedRelations as IfThenElse<
+          Extends<undefined, SelectedRelations[Key]>,
+          never,
+          Key
+        >]: GetTableNameFromNameAndRelation<
+          TName,
+          Key & keyof GetRelationsForTable<TName>
+        > extends infer RTName extends keyof Tables ?
+          z.ZodObject<
+            Schema
+              & (IfThenElse<
+                Extends<SelectedRelations[Key], object>,
+                SchemaWithRelations<
+                  RTName,
+                  SelectedRelations[Key] & WithRelations<RTName>
+                >,
+                SelectSchema<Tables[RTName]>
+              > extends z.ZodObject<infer ExtendedSchema> ?
+                ExtendedSchema
+              : never)
+          >
+        : never;
+      }
+    >
+  : never;
 
 export type SchemasFromTable<
   TTable extends Table,
   TName extends keyof Tables = TTable["_"]["name"] & keyof Tables,
 > = {
-  select: BuildSchema<
-    "select",
-    TTable["_"]["columns"],
-    undefined,
-    CoerceOptions
-  >;
+  select: SelectSchema<TTable>;
   insert: BuildSchema<
     "insert",
     TTable["_"]["columns"],
@@ -92,13 +121,11 @@ export type SchemasFromTable<
     undefined,
     CoerceOptions
   >;
-} & {
-  [Key in SelectWithRelationsHelper<TName>]: <
-    SelectedRelations extends WithRelations<TName>,
-  >(
+  selectWithRelations: <SelectedRelations extends WithRelations<TName>>(
     selectedRelations: SelectedRelations,
-  ) => object;
+  ) => SelectSchema<TTable> & SchemaWithRelations<TName, SelectedRelations>;
 };
+
 export function createSchemasFromTable<TTable extends Table>(
   table: TTable,
 ): SchemasFromTable<TTable> {
@@ -112,6 +139,16 @@ export function createSchemasFromTable<TTable extends Table>(
 }
 
 const recipeSchemas = createSchemasFromTable(recipe);
-recipeSchemas.selectWithRelations({ ingredients: {}, icon: false });
+const schemaWithRelations = recipeSchemas.selectWithRelations({
+  ingredients: { processable: true },
+  icon: true,
+});
+
+type T = z.infer<typeof schemaWithRelations>;
 
 const test: WithRelations<"icon"> = { a: "" };
+
+const ASchema = z.object({ a: z.string(), b: z.number() });
+const BSchema = z.object({ A: ASchema });
+
+type BSchemaType = z.infer<typeof BSchema>;
