@@ -45,11 +45,8 @@ type ModifiedSchema<
   [Key in keyof BaseSchema]: IfThenElse<
     Extends<Key, keyof Modifications>,
     Omit<BaseSchema[Key], keyof Modifications[Key]>
-      & Required<Modifications[Key]> & {
-        select: object;
-        insert: object;
-        update: object;
-      },
+      & Required<Modifications[Key]>
+      & Record<keyof SchemaGroup, object>,
     BaseSchema[Key]
   >;
 };
@@ -207,9 +204,18 @@ type SchemaModifier<
   ) => SchemaModifier<BaseSchema, Modifications & Record<MKey, MSchema>>;
 };
 
-type _Modifications = Partial<
-  Record<string, (baseSchemas: SchemaGroup) => Partial<SchemaGroup>>
->;
+export type InferModifiedSchema<TModifiedSchema extends ModifiedSchema> = {
+  [Key in keyof TModifiedSchema]: {
+    [NKey in keyof SchemaGroup]: z.infer<TModifiedSchema[Key][NKey]>;
+  };
+};
+
+export type InferInnerSchema<
+  TInferredModifiedSchema extends InferModifiedSchema<ModifiedSchema>,
+  Inner extends keyof SchemaGroup,
+> = {
+  [Key in keyof TInferredModifiedSchema]: TInferredModifiedSchema[Key][Inner];
+};
 
 export function createSchemaModifier<T extends Record<string, Table>>(
   schema: T,
@@ -220,7 +226,9 @@ export function createSchemaModifier<T extends Record<string, Table>>(
 }
 
 class InternalSchemaModifier<T extends Record<string, Table>> {
-  private readonly modifications: _Modifications = {};
+  private readonly modifications: Partial<
+    Record<string, (baseSchemas: SchemaGroup) => Partial<SchemaGroup>>
+  > = {};
 
   constructor(private readonly schema: T) {}
 

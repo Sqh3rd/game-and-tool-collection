@@ -1,6 +1,10 @@
 import { relations, schema } from "@nuxthub/db";
 import { extractTablesFromSchema } from "drizzle-orm";
 import * as z from "zod";
+import type {
+    InferInnerSchema,
+    InferModifiedSchema,
+} from "../utils/createSchemasFromTable";
 
 export const timestampMask = { createdAt: true, updatedAt: true } as const;
 
@@ -106,3 +110,8 @@ export const dbSchemas = createSchemaModifier(extractTablesFromSchema(schema))
   }))
   .withRelations(relations)
   .create();
+
+export type DBSchema = InferModifiedSchema<typeof dbSchemas>;
+export type InsertSchema = InferInnerSchema<DBSchema, "insert">;
+export type SelectSchema = InferInnerSchema<DBSchema, "select">;
+export type UpdateSchema = InferInnerSchema<DBSchema, "update">;

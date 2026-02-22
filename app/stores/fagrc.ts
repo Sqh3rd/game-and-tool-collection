@@ -1,11 +1,6 @@
 import { defineStore } from "pinia";
-import type {
-  Game,
-  Mod,
-  Processable,
-  Processor,
-  Recipe,
-} from "~~/shared/types";
+import z from "zod";
+import type { Game, Processable, Processor, Recipe } from "~~/shared/types";
 
 type DataWithLastUpdate<T> = { lastUpdate: Date; data: T };
 
@@ -18,8 +13,31 @@ type GameToModToDataMap<Data> = Map<
 
 type GMD<Data> = GameToModToDataMap<Data>;
 
-type Games = ExtractSelectSchemaWithRelations<Game, { icon: true }>[];
-type Mods = GD<ExtractSelectSchemaWithRelations<Mod, { icon: true }>[]>;
+const gameSchema = dbSchemas.game.selectWithRelations({ icon: true });
+const modSchema = dbSchemas.mod.selectWithRelations({ icon: true });
+const processableSchema = dbSchemas.processable.selectWithRelations({
+  icon: true,
+});
+const processorSchema = dbSchemas.processor.selectWithRelations({
+  entity: true,
+});
+const recipeSchema = dbSchemas.recipe.selectWithRelations({
+  icon: true,
+  ingredients: true,
+  processedBy: true,
+  yield: true,
+});
+
+const fetchSchemas = {
+  game: gameSchema,
+  mod: modSchema,
+  processable: processableSchema,
+  processor: dbSchemas.processor.select,
+  recipe: recipeSchema,
+};
+
+type Games = z.infer<typeof gameSchema>[];
+type Mods = GD<z.infer<typeof modSchema>[]>;
 type Processables = GMD<
   ExtractSelectSchemaWithRelations<Processable, { icon: true }>[]
 >;
@@ -48,7 +66,9 @@ export const useFagrcStore = defineStore("FAGRC", () => {
   const currentGame = ref<ExtractSelectSchema<Game>>();
 
   const loadGames = async () => {
-    games.value = await $fetch("/api/fagrc/games", { method: "GET" });
+    games.value = z
+      .array(gameSchema)
+      .parse(await $fetch("/api/fagrc/games", { method: "GET" }));
   };
 
   const setCurrentGame = (game: ExtractSelectSchema<Game> | undefined) => {
