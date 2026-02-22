@@ -1,1 +1,2 @@
-export * as DB from "./db";
+export * from "./schema";
+

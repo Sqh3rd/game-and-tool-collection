@@ -29,7 +29,7 @@ export type Guard<
   Condition extends boolean,
   GuardStatement extends string,
   T,
-> = IfThenElse<Condition, T & GuardStatement, T>;
+> = IfThenElse<Condition, GuardStatement & T, T>;
 
 type UpperCaseLetter =
   | "A"

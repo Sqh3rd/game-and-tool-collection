@@ -6,5 +6,5 @@ export {
   type Login,
   type ServerError
 } from "./common";
-export { Game, Icon, Mod, Processable, Processor, Recipe } from "./fagrc";
+export * from "./fagrc";
 

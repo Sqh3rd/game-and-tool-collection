@@ -1,9 +1,9 @@
+import { user } from "@nuxthub/db/schema";
 import {
   createInsertSchema,
   createSelectSchema,
   createUpdateSchema,
 } from "drizzle-orm/zod";
-import { user } from "hub:db:schema";
 import * as z from "zod";
 import { timestampMask } from "./helpers";
 

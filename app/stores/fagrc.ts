@@ -5,11 +5,11 @@ import type {
   Processable,
   Processor,
   Recipe,
-} from "~~/shared/types/db";
+} from "~~/shared/types";
 
 type DataWithLastUpdate<T> = { lastUpdate: Date; data: T };
 
-type GameToDataMap<Data> = Map<number, DataWithLastUpdate<Data>>;
+type GD<Data> = Map<number, DataWithLastUpdate<Data>>;
 
 type GameToModToDataMap<Data> = Map<
   number,
@@ -18,20 +18,40 @@ type GameToModToDataMap<Data> = Map<
 
 type GMD<Data> = GameToModToDataMap<Data>;
 
-export const useFagrcStore = defineStore("FAGRC", () => {
-  const games = ref<Game.Select[]>([]);
-  const mods = reactive<GameToDataMap<Mod.Select[]>>(new Map());
-  const processables = reactive<GMD<Processable.Select[]>>(new Map());
-  const processors = reactive<GMD<Processor.Select[]>>(new Map());
-  const recipes = reactive<GMD<Recipe.Select[]>>(new Map());
+type Games = ExtractSelectSchemaWithRelations<Game, { icon: true }>[];
+type Mods = GD<ExtractSelectSchemaWithRelations<Mod, { icon: true }>[]>;
+type Processables = GMD<
+  ExtractSelectSchemaWithRelations<Processable, { icon: true }>[]
+>;
+type Processors = GMD<
+  ExtractSelectSchemaWithRelations<Processor, { entity: { icon: true } }>[]
+>;
+type Recipes = GMD<
+  ExtractSelectSchemaWithRelations<
+    Recipe,
+    {
+      icon: true;
+      ingredients: { processable: { icon: true } };
+      processedBy: { processor: { entity: { icon: true } } };
+      yield: { processable: { icon: true } };
+    }
+  >[]
+>;
 
-  const currentGame = ref<Game.Select>();
+export const useFagrcStore = defineStore("FAGRC", () => {
+  const games = ref<Games>([]);
+  const mods = reactive<Mods>(new Map());
+  const processables = reactive<Processables>(new Map());
+  const processors = reactive<Processors>(new Map());
+  const recipes = reactive<Recipes>(new Map());
+
+  const currentGame = ref<ExtractSelectSchema<Game>>();
 
   const loadGames = async () => {
     games.value = await $fetch("/api/fagrc/games", { method: "GET" });
   };
 
-  const setCurrentGame = (game: Game.Select | undefined) => {
+  const setCurrentGame = (game: ExtractSelectSchema<Game> | undefined) => {
     currentGame.value = game;
     if (!game) return;
     const { id } = game;

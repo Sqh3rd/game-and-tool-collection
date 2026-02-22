@@ -22,12 +22,15 @@ export const fagrcRelations = defineRelationsPart(
     recipe,
   },
   (r) => ({
-    game: { icon: r.one.icon({ from: r.game.iconId, to: r.icon.id }) },
+    game: {
+      icon: r.one.icon({ from: r.game.iconId, to: r.icon.id, optional: false }),
+    },
 
     junctionProcessorRecipe: {
       processor: r.one.processor({
         from: r.junctionProcessorRecipe.processorId,
         to: r.processor.processableId,
+        optional: false,
       }),
     },
 
@@ -35,19 +38,27 @@ export const fagrcRelations = defineRelationsPart(
       processable: r.one.processable({
         from: r.junctionProcessableRecipe.processableId,
         to: r.processable.id,
+        optional: false,
       }),
     },
 
-    mod: { icon: r.one.icon({ from: r.mod.iconId, to: r.icon.id }) },
+    mod: {
+      icon: r.one.icon({ from: r.mod.iconId, to: r.icon.id, optional: false }),
+    },
 
     processable: {
-      icon: r.one.icon({ from: r.processable.iconId, to: r.icon.id }),
+      icon: r.one.icon({
+        from: r.processable.iconId,
+        to: r.icon.id,
+        optional: false,
+      }),
     },
 
     processor: {
       entity: r.one.processable({
         from: r.processor.processableId,
         to: r.processable.id,
+        optional: false,
       }),
     },
 
@@ -66,7 +77,11 @@ export const fagrcRelations = defineRelationsPart(
         from: r.recipe.id,
         to: r.junctionProcessorRecipe.recipeId,
       }),
-      icon: r.one.icon({ from: r.recipe.iconId, to: r.icon.id }),
+      icon: r.one.icon({
+        from: r.recipe.iconId,
+        to: r.icon.id,
+        optional: false,
+      }),
     },
   }),
 );
