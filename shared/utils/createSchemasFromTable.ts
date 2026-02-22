@@ -1,13 +1,12 @@
-import { relations, schema, type Relations } from "@nuxthub/db";
-import {
-  extractTablesFromSchema,
-  isTable,
-  type ExtractTablesWithRelationsParts,
-  type IfThenElse,
-  type Many,
-  type One,
-  type Relation,
-  type Table
+import type {
+  AnyRelation,
+  AnyRelationsBuilderConfig,
+  ExtractTablesWithRelationsParts,
+  IfThenElse,
+  Many,
+  One,
+  Relation,
+  Table,
 } from "drizzle-orm";
 import {
   createInsertSchema,
@@ -17,198 +16,9 @@ import {
   type CoerceOptions,
 } from "drizzle-orm/zod";
 import * as z from "zod";
-import type { ConvertCase, Extends, Guard, UnionIsEmpty } from "./helperTypes";
-
-type Schema = typeof schema;
-type Tables = {
-  [Key in keyof Schema as Schema[Key] extends infer TTable extends Table ?
-    ConvertCase<TTable["_"]["name"], "camelCase">
-  : never]: Schema[Key];
-};
-type NicerRelations = {
-  [Key in keyof Relations as ConvertCase<
-    Key & string,
-    "camelCase"
-  >]: Relations[Key];
-};
-
-type GetRelationsForTable<TName extends keyof Tables> = NicerRelations[TName
-  & keyof NicerRelations]["relations"];
-
-type GetTableNameFromNameAndRelation<
-  TName extends keyof Tables,
-  RKey extends keyof GetRelationsForTable<TName>,
-> =
-  GetRelationsForTable<TName>[RKey] extends infer Relation ?
-    Relation extends (
-      | One<infer TName extends keyof Tables, boolean>
-      | Many<infer TName extends keyof Tables>
-    ) ?
-      TName
-    : never
-  : never;
-
-type WithRelations<TName extends keyof Tables> = IfThenElse<
-  UnionIsEmpty<keyof GetRelationsForTable<TName>>,
-  never,
-  {
-    [Key in keyof GetRelationsForTable<TName>]?:
-      | true
-      | WithRelations<GetTableNameFromNameAndRelation<TName, Key>>;
-  }
->;
-
-type SelectSchema<TTable extends Table> = BuildSchema<
-  "select",
-  TTable["_"]["columns"],
-  undefined,
-  CoerceOptions
->;
-
-type SchemaWithRelations<
-  TName extends keyof Tables,
-  SelectedRelations extends WithRelations<TName>,
-> =
-  SelectSchema<Tables[TName]> extends z.ZodObject<infer Schema> ?
-    z.ZodObject<
-      Schema & {
-        [Key in keyof SelectedRelations as IfThenElse<
-          Extends<undefined, SelectedRelations[Key]>,
-          never,
-          Key
-        >]: Key extends keyof GetRelationsForTable<TName> ?
-          GetTableNameFromNameAndRelation<TName, Key> extends (
-            infer RTName extends keyof Tables
-          ) ?
-            z.ZodObject<
-              Schema
-                & (IfThenElse<
-                  Extends<SelectedRelations[Key], object>,
-                  SchemaWithRelations<
-                    RTName,
-                    SelectedRelations[Key] & WithRelations<RTName>
-                  >,
-                  SelectSchema<Tables[RTName]>
-                > extends z.ZodObject<infer ExtendedSchema> ?
-                  ExtendedSchema
-                : never)
-            > extends infer InnerSchema extends z.ZodObject ?
-              GetRelationsForTable<TName>[Key] extends (
-                One<string, infer IsOptional>
-              ) ?
-                IfThenElse<IsOptional, z.ZodOptional<InnerSchema>, InnerSchema>
-              : GetRelationsForTable<TName>[Key] extends Many<string> ?
-                z.ZodArray<InnerSchema>
-              : never
-            : never
-          : never
-        : never;
-      }
-    >
-  : never;
-
-export type SchemasFromTable<
-  TTable extends Table,
-  TName extends keyof Tables = TTable["_"]["name"] & keyof Tables,
-> = {
-  readonly select: SelectSchema<TTable>;
-  readonly insert: BuildSchema<
-    "insert",
-    TTable["_"]["columns"],
-    undefined,
-    CoerceOptions
-  >;
-  readonly update: BuildSchema<
-    "update",
-    TTable["_"]["columns"],
-    undefined,
-    CoerceOptions
-  >;
-  selectWithRelations: <SelectedRelations extends WithRelations<TName>>(
-    selectedRelations: SelectedRelations,
-  ) => SchemaWithRelations<TName, SelectedRelations>;
-};
-
-export function createSchemasFromTable<
-  TTable extends Table,
-  TName extends keyof Tables = TTable["_"]["name"] & keyof Tables,
->(table: TTable): SchemasFromTable<TTable> {
-  const selectSchema = createSelectSchema(table);
-  const tableName = table._.name;
-  const validRelations =
-    tableName in relations ?
-      relations[tableName as keyof NicerRelations]
-    : undefined;
-  return {
-    select: createSelectSchema(table),
-    insert: createInsertSchema(table),
-    update: createUpdateSchema(table),
-
-    selectWithRelations: <SelectedRelations extends WithRelations<TName>>(
-      selectedRelations: SelectedRelations,
-    ) => {
-      if (!validRelations)
-        throw new Error(`No relations defined for table "${tableName}"`);
-      let selectWithRelationsSchema: z.ZodObject = selectSchema;
-      for (const srKey in selectedRelations) {
-        if (!(srKey in validRelations.relations))
-          throw new Error(
-            `No relation "${srKey}" found for table "${tableName}"`,
-          );
-        const currentRelation = validRelations.relations[
-          srKey as keyof typeof validRelations.relations
-        ] as Relation<string>;
-
-        const targetTable = currentRelation.targetTable;
-        if (!isTable(targetTable))
-          throw new Error(
-            `No valid target table "${currentRelation.targetTableName}" found for relation "${srKey}" of table "${tableName}"`,
-          );
-
-        const currentRelationSchema = createSchemasFromTable(targetTable);
-        const nestedSelectedRelations = selectedRelations[srKey];
-        const nestedSRKeys =
-          typeof nestedSelectedRelations === "object" ?
-            Object.keys(nestedSelectedRelations)
-          : [];
-        const nestedSchema =
-          nestedSRKeys.length ?
-            currentRelationSchema.selectWithRelations(
-              <never>nestedSelectedRelations,
-            )
-          : currentRelationSchema.select;
-
-        selectWithRelationsSchema = selectWithRelationsSchema.extend({
-          [srKey]:
-            currentRelation.relationType === "many" ?
-              z.array(nestedSchema)
-            : nestedSchema,
-        });
-      }
-      return selectWithRelationsSchema as SchemaWithRelations<
-        TName,
-        SelectedRelations
-      >;
-    },
-  } as SchemasFromTable<TTable>;
-}
-
-export type SimplifySchema<
-  T extends SchemasFromTable<Table> = SchemasFromTable<Table>,
-> = { [Key in keyof T]: T[Key] extends z.ZodObject ? z.infer<T[Key]> : T[Key] };
-
-export type ExtractSelectSchema<T extends SimplifySchema> = T["select"];
-export type ExtractInsertSchema<T extends SimplifySchema> = T["insert"];
-export type ExtractUpdateSchema<T extends SimplifySchema> = T["update"];
-export type ExtractSelectSchemaWithRelations<
-  T extends SimplifySchema,
-  SelectedRelations extends Parameters<T["selectWithRelations"]>[0],
-> =
-  T extends SimplifySchema<SchemasFromTable<infer TTable extends Table>> ?
-    z.infer<
-      SchemaWithRelations<TTable["_"]["name"] & keyof Tables, SelectedRelations>
-    >
-  : never;
+import type { Equals, Extends, Guard, UnionIsEmpty } from "./helperTypes";
+import { convertCase } from "./stringUtils";
+import type { ConvertCase } from "./stringUtils.types";
 
 export type SchemaGroup<
   Insert extends z._ZodType = z.ZodObject,
@@ -222,8 +32,6 @@ export type BaseSchemaGroup<TTable extends Table> = SchemaGroup<
   BuildSchema<"update", TTable["_"]["columns"], undefined, CoerceOptions>
 >;
 
-const tableBrand = Symbol("tableBrand");
-type TableBrand = typeof tableBrand;
 export type Schemas<T extends Record<string, Table> = Record<string, Table>> = {
   [Key in keyof T]: BaseSchemaGroup<T[Key]>;
 };
@@ -236,28 +44,154 @@ type ModifiedSchema<
 > = {
   [Key in keyof BaseSchema]: IfThenElse<
     Extends<Key, keyof Modifications>,
-    Omit<BaseSchema[Key], keyof Modifications[Key]> & Modifications[Key],
+    Omit<BaseSchema[Key], keyof Modifications[Key]>
+      & Required<Modifications[Key]> & {
+        select: object;
+        insert: object;
+        update: object;
+      },
     BaseSchema[Key]
   >;
 };
 
-type ModifiedSchemaWithRelations<
-  BaseSchema extends ModifiedSchema,
-  SchemaRelations extends Record<
-    string,
-    ExtractTablesWithRelationsParts<any, any>
+type RestructuredRelations<
+  TRelations extends ExtractTablesWithRelationsParts<
+    AnyRelationsBuilderConfig,
+    Record<string, Table>
+  > = ExtractTablesWithRelationsParts<
+    AnyRelationsBuilderConfig,
+    Record<string, Table>
   >,
 > = {
-  [Key in keyof BaseSchema]: BaseSchema[Key] & {
-    selectWithRelations: <SelectedRelations extends WithRelations<>>(selectedRelations: SelectedRelations) => ;
-  };
+  [Key in keyof TRelations as ConvertCase<
+    TRelations[Key]["table"]["_"]["name"],
+    "camelCase"
+  >]: TRelations[Key]["relations"];
+};
+
+type GetRelationInfo<
+  TRelations extends RestructuredRelations,
+  TSourceName extends keyof TRelations,
+  TRelationName extends keyof TRelations[TSourceName],
+> = TRelations[TSourceName][TRelationName];
+
+type SelectNestedRelations<
+  TableName extends string,
+  TRelations extends RestructuredRelations,
+> =
+  TRelations[ConvertCase<TableName, "camelCase">] extends infer CRelation ?
+    CRelation extends Record<string, AnyRelation> ?
+      IfThenElse<
+        UnionIsEmpty<keyof CRelation>,
+        never,
+        {
+          [RKey in keyof CRelation]?:
+            | true
+            | (CRelation[RKey] extends Relation<infer TargetTableName> ?
+                SelectNestedRelations<TargetTableName, TRelations>
+              : never);
+        }
+      >
+    : never
+  : never;
+
+type SchemaWithSelectedNestedRelations<
+  TBaseSchema extends Schemas,
+  TModifications extends Modification<TBaseSchema>,
+  TModifiedSchema extends ModifiedSchema<TBaseSchema, TModifications>,
+  CurrentEntry extends keyof TModifiedSchema,
+  TRelations extends RestructuredRelations,
+  TSelectedNestedRelations extends SelectNestedRelations<string, TRelations>,
+> =
+  TModifiedSchema[CurrentEntry]["select"] extends (
+    z.ZodObject<infer InnerObject>
+  ) ?
+    z.ZodObject<
+      InnerObject & {
+        [Key in keyof TSelectedNestedRelations]: GetRelationInfo<
+          TRelations,
+          CurrentEntry & keyof TRelations,
+          Key & keyof TRelations[CurrentEntry & keyof TRelations]
+        > extends infer ECurrentRelation ?
+          ECurrentRelation extends Relation<infer ETargetTable> ?
+            SchemaWithSelectedNestedRelations<
+              TBaseSchema,
+              TModifications,
+              TModifiedSchema,
+              ETargetTable,
+              TRelations,
+              TSelectedNestedRelations[Key]
+            > extends infer ERecursiveType extends z._ZodType ?
+              ECurrentRelation extends One<ETargetTable, infer EIsOptional> ?
+                IfThenElse<
+                  EIsOptional,
+                  z.ZodOptional<ERecursiveType>,
+                  ERecursiveType
+                >
+              : ECurrentRelation extends Many<ETargetTable> ?
+                z.ZodArray<ERecursiveType>
+              : never
+            : never
+          : never
+        : never;
+      }
+    >
+  : never;
+
+type ModifiedSchemaWithRelations<
+  TBaseSchema extends Schemas,
+  TModifications extends Modification<TBaseSchema>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  TSchemaRelations extends ExtractTablesWithRelationsParts<any, any>,
+  TRestructuredRelations extends RestructuredRelations =
+    RestructuredRelations<TSchemaRelations>,
+  TModifiedSchema extends ModifiedSchema<TBaseSchema, TModifications> =
+    ModifiedSchema<TBaseSchema, TModifications>,
+> = {
+  [Key in keyof TModifiedSchema]: TModifiedSchema[Key]
+    & (SelectNestedRelations<Key & string, TRestructuredRelations> extends (
+      infer TSelectNestedRelations
+    ) ?
+      IfThenElse<
+        UnionIsEmpty<TSelectNestedRelations>,
+        object,
+        {
+          selectWithRelations: <
+            TSelectedRelations extends SelectNestedRelations<
+              Key & string,
+              TRestructuredRelations
+            >,
+          >(
+            selectedRelations: TSelectedRelations,
+          ) => SchemaWithSelectedNestedRelations<
+            TBaseSchema,
+            TModifications,
+            TModifiedSchema,
+            Key,
+            TRestructuredRelations,
+            TSelectedRelations
+          >;
+        }
+      >
+    : never);
 };
 
 type SchemaModifier<
   BaseSchema extends Schemas,
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   Modifications extends Modification<BaseSchema> = {},
 > = {
   create: () => ModifiedSchema<BaseSchema, Modifications>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  withRelations: <TRelations extends ExtractTablesWithRelationsParts<any, any>>(
+    relations: TRelations,
+  ) => {
+    create: () => ModifiedSchemaWithRelations<
+      BaseSchema,
+      Modifications,
+      TRelations
+    >;
+  };
   modify: <
     MKey extends Exclude<keyof BaseSchema, keyof Modifications>,
     MSchema extends Partial<SchemaGroup>,
@@ -266,22 +200,134 @@ type SchemaModifier<
     factory: (
       baseSchemas: BaseSchema[MKey],
     ) => Guard<
-      Extends<BaseSchema[MKey], MSchema>,
+      Equals<BaseSchema[MKey], MSchema>,
       "Unnecessary modification: Modified schemas are the same as the base schemas",
       MSchema
     >,
   ) => SchemaModifier<BaseSchema, Modifications & Record<MKey, MSchema>>;
 };
+
+type _Modifications = Partial<
+  Record<string, (baseSchemas: SchemaGroup) => Partial<SchemaGroup>>
+>;
+
 export function createSchemaModifier<T extends Record<string, Table>>(
   schema: T,
-): SchemaModifier<Schemas<T>> {}
+): SchemaModifier<Schemas<T>> {
+  return new InternalSchemaModifier(schema) as unknown as SchemaModifier<
+    Schemas<T>
+  >;
+}
 
-const tables = extractTablesFromSchema(schema);
-export const schemas = createSchemaModifier(tables)
-  .modify("game", (it) => {
-    return { insert: z.object({ a: z.string() }) };
-  })
-  .modify("icon", (it) => ({ ...it }))
-  .create();
+class InternalSchemaModifier<T extends Record<string, Table>> {
+  private readonly modifications: _Modifications = {};
 
-const t: typeof schemas.game = {};
+  constructor(private readonly schema: T) {}
+
+  modify(
+    key: string,
+    factory: (baseSchemas: SchemaGroup) => Partial<SchemaGroup>,
+  ) {
+    this.modifications[key] = factory;
+    return this;
+  }
+
+  create() {
+    const modifiedSchema: Record<string, SchemaGroup> = {};
+    for (const key in this.schema) {
+      const table = this.schema[key];
+      if (!table) continue;
+
+      const baseSchemaGroup = {
+        insert: createInsertSchema(table),
+        select: createSelectSchema(table),
+        update: createUpdateSchema(table),
+      };
+      const modifiedSchemaGroup =
+        key in this.modifications ?
+          this.modifications[key]?.(baseSchemaGroup)
+        : undefined;
+      modifiedSchema[key] = { ...baseSchemaGroup, ...modifiedSchemaGroup };
+    }
+    return modifiedSchema;
+  }
+
+  private static selectWithRelation(
+    modifiedSchema: Record<string, SchemaGroup>,
+    relations: Record<string, Record<string, Relation<string>>>,
+    currentEntry: string,
+    selectedRelations: Record<string, unknown>,
+  ): z.ZodObject {
+    if (!(currentEntry in modifiedSchema) || !modifiedSchema[currentEntry])
+      throw new Error("Invalid key");
+    const currentSelectSchema = modifiedSchema[currentEntry].select;
+    let selectWithRelationSchema = currentSelectSchema;
+    for (const key in selectedRelations) {
+      if (!selectedRelations[key]) continue;
+      const currentRelation = relations[currentEntry]?.[key];
+      if (!currentRelation) throw new Error("Invalid relation");
+      const target = convertCase(currentRelation.targetTableName, "camelCase");
+      if (!modifiedSchema[target]) throw new Error("Relation target not found");
+
+      const innerSchema =
+        typeof selectedRelations[key] === "object" ?
+          InternalSchemaModifier.selectWithRelation(
+            modifiedSchema,
+            relations,
+            target,
+            selectedRelations[key] as Record<string, unknown>,
+          )
+        : modifiedSchema[target].select;
+
+      const inner =
+        currentRelation.relationType === "one" ?
+          (<One<string>>currentRelation).optional ?
+            z.optional(innerSchema)
+          : innerSchema
+        : z.array(innerSchema);
+
+      selectWithRelationSchema = selectWithRelationSchema.extend({
+        [key]: inner,
+      });
+    }
+    return selectWithRelationSchema;
+  }
+
+  withRelations(
+    relations: ExtractTablesWithRelationsParts<AnyRelationsBuilderConfig, T>,
+  ) {
+    const modifiedSchema = this.create();
+    const schemaWithRelationsExtension: Record<
+      string,
+      SchemaGroup & {
+        selectWithRelations?: (
+          relations: Record<string, unknown>,
+        ) => z._ZodType;
+      }
+    > = { ...modifiedSchema };
+    const relationsByTableName: Record<
+      string,
+      Record<string, Relation<string>>
+    > = {};
+    for (const key in relations) {
+      const relation = relations[key];
+      const tableName = relation?.table._.name;
+      if (!tableName) continue;
+      relationsByTableName[convertCase(tableName, "camelCase")] =
+        relation.relations;
+    }
+
+    for (const key in relationsByTableName) {
+      if (!schemaWithRelationsExtension[key]) continue;
+      schemaWithRelationsExtension[key].selectWithRelations = (
+        selectedRelations,
+      ) =>
+        InternalSchemaModifier.selectWithRelation(
+          modifiedSchema,
+          relationsByTableName,
+          key,
+          selectedRelations,
+        );
+    }
+  }
+}
