@@ -1,8 +1,7 @@
-import { integer, varchar } from "drizzle-orm/pg-core";
-import { fagrcTable } from "../../helpers/tableCreators";
+import { integer, pgTable, varchar } from "drizzle-orm/pg-core";
 import { timestamps } from "../../helpers/timestamps";
 
-export const icon = fagrcTable("icon", {
+export const icon = pgTable("fagrc_icon", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar().notNull(),
   svg: varchar().notNull().unique(),

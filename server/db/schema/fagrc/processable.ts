@@ -1,10 +1,9 @@
-import { index, integer, real, varchar } from "drizzle-orm/pg-core";
+import { index, integer, pgTable, real, varchar } from "drizzle-orm/pg-core";
 import { game, icon, mod } from ".";
-import { fagrcTable } from "../../helpers/tableCreators";
 import { timestamps } from "../../helpers/timestamps";
 
-export const processable = fagrcTable(
-  "processable",
+export const processable = pgTable(
+  "fagrc_processable",
   {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     name: varchar().notNull().unique(),

@@ -1,11 +1,10 @@
 import { eq } from "drizzle-orm";
-import { user } from "hub:db:schema";
-import { User } from "~~/shared/types/db";
+import { user } from "@nuxthub/db/schema";
 
 export default defineEventHandler(async (event) => {
   const { email, name, password, confirmPassword } = await readValidatedBody(
     event,
-    User.insertSchema.parse,
+    dbSchemas.user.insert.parse,
   );
 
   const usersWithSameEmail = await db
@@ -34,7 +33,7 @@ export default defineEventHandler(async (event) => {
   )[0];
 
   await setUserSession(event, {
-    user: { email: newUser.email, name: newUser.name },
+    user: { email: newUser?.email, name: newUser?.name },
   });
 
   return {};

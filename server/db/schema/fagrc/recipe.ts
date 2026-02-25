@@ -1,9 +1,8 @@
-import { integer, real } from "drizzle-orm/pg-core";
+import { integer, pgTable, real } from "drizzle-orm/pg-core";
 import { icon } from ".";
-import { fagrcTable } from "../../helpers/tableCreators";
 import { timestamps } from "../../helpers/timestamps";
 
-export const recipe = fagrcTable("recipe", {
+export const recipe = pgTable("fagrc_recipe", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   duration: real(),
   iconId: integer().references(() => icon.id),

@@ -1,6 +1,5 @@
-import { integer, pgEnum, primaryKey, varchar } from "drizzle-orm/pg-core";
+import { integer, pgEnum, pgTable, primaryKey, varchar } from "drizzle-orm/pg-core";
 import { recipe } from ".";
-import { fagrcTable } from "../../helpers/tableCreators";
 import { timestamps } from "../../helpers/timestamps";
 import { processable } from "./processable";
 
@@ -9,8 +8,8 @@ export const junctionProcessableRecipeType = pgEnum(
   ["IN", "OUT"],
 );
 
-export const junctionProcessableRecipe = fagrcTable(
-  "junction_processable_recipe",
+export const junctionProcessableRecipe = pgTable(
+  "fagrc_junction_processable_recipe",
   {
     recipeId: integer()
       .notNull()

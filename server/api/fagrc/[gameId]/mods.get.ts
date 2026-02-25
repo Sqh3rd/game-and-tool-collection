@@ -10,5 +10,5 @@ export default defineEventHandler(async (event) => {
     gameIdRouteParamSchema.parse,
   );
 
-  return await db.select().from(mod).where(eq(mod.gameId, gameId));
+  return db.query.mod.findMany({ with: { icon: true}})
 });

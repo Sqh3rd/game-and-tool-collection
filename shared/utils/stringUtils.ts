@@ -45,21 +45,11 @@ export const splitByCase = <S extends string>(s: S): SplitByCase<S> => {
       break;
     }
     case "kebap-case": {
-      for (let i = 0; i < s.length; i++) {
-        const currentChar = s.charAt(i);
-        if (currentChar != "-") continue;
-        result.push(s.substring(sectionStart, i).toLowerCase());
-        sectionStart = i + 1;
-      }
+        result.push(...s.split("-"));
       break;
     }
     case "snake_case": {
-      for (let i = 0; i < s.length; i++) {
-        const currentChar = s.charAt(i);
-        if (currentChar != "_") continue;
-        result.push(s.substring(sectionStart, i).toLowerCase());
-        sectionStart = i + 1;
-      }
+      result.push(...s.split("_"));
       break;
     }
   }
@@ -79,11 +69,11 @@ export const convertCase = <S extends string, Target extends Case>(
   const split = splitByCase(s);
   switch (target) {
     case "PascalCase":
-      return split.map(capitalize).join() as ConvertCase<S, Target>;
+      return split.map(capitalize).join("") as ConvertCase<S, Target>;
     case "camelCase":
       return split
         .map((it, idx) => (idx === 0 ? it : capitalize(it)))
-        .join() as ConvertCase<S, Target>;
+        .join("") as ConvertCase<S, Target>;
     case "kebap-case":
       return split.join("-") as ConvertCase<S, Target>;
     case "snake_case":
@@ -93,4 +83,4 @@ export const convertCase = <S extends string, Target extends Case>(
   }
 };
 
-const test = convertCase("somethingInCamelCase", "kebap-case");
+const test = convertCase("somethingInCamelCase", "snake_case");

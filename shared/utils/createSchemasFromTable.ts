@@ -1,12 +1,13 @@
-import type {
-  AnyRelation,
-  AnyRelationsBuilderConfig,
-  ExtractTablesWithRelationsParts,
-  IfThenElse,
-  Many,
-  One,
-  Relation,
+import {
+  getTableName,
   Table,
+  type AnyRelation,
+  type AnyRelationsBuilderConfig,
+  type ExtractTablesWithRelationsParts,
+  type IfThenElse,
+  type Many,
+  type One,
+  type Relation,
 } from "drizzle-orm";
 import {
   createInsertSchema,
@@ -33,7 +34,7 @@ export type BaseSchemaGroup<TTable extends Table> = SchemaGroup<
 >;
 
 export type Schemas<T extends Record<string, Table> = Record<string, Table>> = {
-  [Key in keyof T]: BaseSchemaGroup<T[Key]>;
+  [Key in keyof T as T[Key]["_"]["name"]]: BaseSchemaGroup<T[Key]>;
 };
 type Modification<BaseSchema extends Schemas> = {
   [Key in keyof BaseSchema]?: Partial<BaseSchema[Key]>;
@@ -46,7 +47,7 @@ type ModifiedSchema<
     Extends<Key, keyof Modifications>,
     Omit<BaseSchema[Key], keyof Modifications[Key]>
       & Required<Modifications[Key]>
-      & Record<keyof SchemaGroup, object>,
+      & { select: object; insert: object; update: object },
     BaseSchema[Key]
   >;
 };
@@ -319,7 +320,8 @@ class InternalSchemaModifier<T extends Record<string, Table>> {
     > = {};
     for (const key in relations) {
       const relation = relations[key];
-      const tableName = relation?.table._.name;
+      if (!relation) continue;
+      const tableName = getTableName(relation.table);
       if (!tableName) continue;
       relationsByTableName[convertCase(tableName, "camelCase")] =
         relation.relations;
@@ -337,5 +339,6 @@ class InternalSchemaModifier<T extends Record<string, Table>> {
           selectedRelations,
         );
     }
+    return schemaWithRelationsExtension;
   }
 }

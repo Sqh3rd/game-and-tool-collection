@@ -1,9 +1,10 @@
 import { relations, schema } from "@nuxthub/db";
 import { extractTablesFromSchema } from "drizzle-orm";
 import * as z from "zod";
-import type {
-    InferInnerSchema,
-    InferModifiedSchema,
+import {
+  createSchemaModifier,
+    type InferInnerSchema,
+    type InferModifiedSchema,
 } from "../utils/createSchemasFromTable";
 
 export const timestampMask = { createdAt: true, updatedAt: true } as const;
@@ -84,27 +85,27 @@ export const dbSchemas = createSchemaModifier(extractTablesFromSchema(schema))
       .safeExtend({ email: z.email() }),
     update: base.update.omit(timestampMask),
   }))
-  .modify("game", ({ insert, update }) => ({
+  .modify("fagrc_game", ({ insert, update }) => ({
     insert: insert.omit(timestampMask),
     update: update.omit(timestampMask),
   }))
-  .modify("icon", ({ insert, update }) => ({
+  .modify("fagrc_icon", ({ insert, update }) => ({
     insert: insert.omit(timestampMask),
     update: update.omit(timestampMask),
   }))
-  .modify("mod", ({ insert, update }) => ({
+  .modify("fagrc_mod", ({ insert, update }) => ({
     insert: insert.omit(timestampMask),
     update: update.omit(timestampMask),
   }))
-  .modify("processable", ({ insert, update }) => ({
+  .modify("fagrc_processable", ({ insert, update }) => ({
     insert: insert.omit(timestampMask),
     update: update.omit(timestampMask),
   }))
-  .modify("processor", ({ insert, update }) => ({
+  .modify("fagrc_processor", ({ insert, update }) => ({
     insert: insert.omit(timestampMask),
     update: update.omit(timestampMask),
   }))
-  .modify("recipe", ({ insert, update }) => ({
+  .modify("fagrc_recipe", ({ insert, update }) => ({
     insert: insert.omit(timestampMask),
     update: update.omit(timestampMask),
   }))
@@ -115,3 +116,5 @@ export type DBSchema = InferModifiedSchema<typeof dbSchemas>;
 export type InsertSchema = InferInnerSchema<DBSchema, "insert">;
 export type SelectSchema = InferInnerSchema<DBSchema, "select">;
 export type UpdateSchema = InferInnerSchema<DBSchema, "update">;
+
+const gameWithIngredient = dbSchemas.fagrc_recipe.selectWithRelations({ ingredients: { }});

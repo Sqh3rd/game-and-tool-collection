@@ -71,25 +71,25 @@ export type SplitByCase<S extends string, Source extends Case = GetCase<S>> =
   : Source extends "snake_case" ? SplitBySnakeCase<S>
   : [];
 
-type TupelToCamelCase<S extends string[]> =
-  `${S[0]}${TupelToPascalCase<S, [0]>}`;
-type TupelToPascalCase<S extends string[], CurrentIndex extends number[] = []> =
+type TupleToCamelCase<S extends string[]> =
+  `${S[0]}${TupleToPascalCase<S, [0]>}`;
+type TupleToPascalCase<S extends string[], CurrentIndex extends number[] = []> =
   CurrentIndex["length"] extends S["length"] ? ""
-  : `${Capitalize<S[CurrentIndex["length"]]>}${TupelToPascalCase<S, [...CurrentIndex, 0]>}`;
-type TupelToSeparatedString<
+  : `${Capitalize<S[CurrentIndex["length"]]>}${TupleToPascalCase<S, [...CurrentIndex, 0]>}`;
+type TupleToSeparatedString<
   S extends string[],
   Separator extends string,
   CurrentIndex extends number[] = [],
 > =
   CurrentIndex["length"] extends S["length"] ? ""
-  : `${S[CurrentIndex["length"]]}${[...CurrentIndex, 0]["length"] extends S["length"] ? "" : Separator}${TupelToSeparatedString<S, Separator, [...CurrentIndex, 0]>}`;
-type TupelToKebapCase<S extends string[]> = TupelToSeparatedString<S, "-">;
-type TupelToSnakeCase<S extends string[]> = TupelToSeparatedString<S, "_">;
+  : `${S[CurrentIndex["length"]]}${[...CurrentIndex, 0]["length"] extends S["length"] ? "" : Separator}${TupleToSeparatedString<S, Separator, [...CurrentIndex, 0]>}`;
+type TupleToKebapCase<S extends string[]> = TupleToSeparatedString<S, "-">;
+type TupleToSnakeCase<S extends string[]> = TupleToSeparatedString<S, "_">;
 export type ToCase<S extends string[], Target extends Case> =
-  Target extends "camelCase" ? TupelToCamelCase<S>
-  : Target extends "PascalCase" ? TupelToPascalCase<S>
-  : Target extends "kebap-case" ? TupelToKebapCase<S>
-  : Target extends "snake_case" ? TupelToSnakeCase<S>
+  Target extends "camelCase" ? TupleToCamelCase<S>
+  : Target extends "PascalCase" ? TupleToPascalCase<S>
+  : Target extends "kebap-case" ? TupleToKebapCase<S>
+  : Target extends "snake_case" ? TupleToSnakeCase<S>
   : never;
 
 export type ConvertCase<
