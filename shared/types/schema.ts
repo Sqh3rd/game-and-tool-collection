@@ -3,8 +3,8 @@ import { extractTablesFromSchema } from "drizzle-orm";
 import * as z from "zod";
 import {
   createSchemaModifier,
-    type InferInnerSchema,
-    type InferModifiedSchema,
+  type InferInnerSchema,
+  type InferModifiedSchema,
 } from "../utils/createSchemasFromTable";
 
 export const timestampMask = { createdAt: true, updatedAt: true } as const;
@@ -116,5 +116,3 @@ export type DBSchema = InferModifiedSchema<typeof dbSchemas>;
 export type InsertSchema = InferInnerSchema<DBSchema, "insert">;
 export type SelectSchema = InferInnerSchema<DBSchema, "select">;
 export type UpdateSchema = InferInnerSchema<DBSchema, "update">;
-
-const gameWithIngredient = dbSchemas.fagrc_recipe.selectWithRelations({ ingredients: { }});

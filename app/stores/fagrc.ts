@@ -1,6 +1,5 @@
 import { defineStore } from "pinia";
 import z from "zod";
-import type { Game, Processable, Processor, Recipe } from "~~/shared/types";
 
 type DataWithLastUpdate<T> = { lastUpdate: Date; data: T };
 
@@ -13,15 +12,15 @@ type GameToModToDataMap<Data> = Map<
 
 type GMD<Data> = GameToModToDataMap<Data>;
 
-const gameSchema = dbSchemas.game.selectWithRelations({ icon: true });
-const modSchema = dbSchemas.mod.selectWithRelations({ icon: true });
-const processableSchema = dbSchemas.processable.selectWithRelations({
+const gameSchema = dbSchemas.fagrc_game.selectWithRelations({ icon: true });
+const modSchema = dbSchemas.fagrc_mod.selectWithRelations({ icon: true });
+const processableSchema = dbSchemas.fagrc_processable.selectWithRelations({
   icon: true,
 });
-const processorSchema = dbSchemas.processor.selectWithRelations({
+const processorSchema = dbSchemas.fagrc_processor.selectWithRelations({
   entity: true,
 });
-const recipeSchema = dbSchemas.recipe.selectWithRelations({
+const recipeSchema = dbSchemas.fagrc_recipe.selectWithRelations({
   icon: true,
   ingredients: true,
   processedBy: true,
@@ -32,7 +31,7 @@ const fetchSchemas = {
   game: gameSchema,
   mod: modSchema,
   processable: processableSchema,
-  processor: dbSchemas.processor.select,
+  processor: dbSchemas.fagrc_processor.select,
   recipe: recipeSchema,
 };
 

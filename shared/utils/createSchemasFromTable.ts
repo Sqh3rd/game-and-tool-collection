@@ -1,6 +1,5 @@
 import {
   getTableName,
-  Table,
   type AnyRelation,
   type AnyRelationsBuilderConfig,
   type ExtractTablesWithRelationsParts,
@@ -8,6 +7,7 @@ import {
   type Many,
   type One,
   type Relation,
+  type Table,
 } from "drizzle-orm";
 import {
   createInsertSchema,
@@ -19,7 +19,6 @@ import {
 import * as z from "zod";
 import type { Equals, Extends, Guard, UnionIsEmpty } from "./helperTypes";
 import { convertCase } from "./stringUtils";
-import type { ConvertCase } from "./stringUtils.types";
 
 export type SchemaGroup<
   Insert extends z._ZodType = z.ZodObject,
@@ -47,10 +46,27 @@ type ModifiedSchema<
     Extends<Key, keyof Modifications>,
     Omit<BaseSchema[Key], keyof Modifications[Key]>
       & Required<Modifications[Key]>
-      & { select: object; insert: object; update: object },
+      & Record<"select" | "insert" | "update", object>,
     BaseSchema[Key]
   >;
 };
+
+type GetTableByRelationName<
+  TRelations extends ExtractTablesWithRelationsParts<
+    AnyRelationsBuilderConfig,
+    Record<string, Table>
+  >,
+  TRelationsName extends TRelations[keyof TRelations]["name"],
+> =
+  keyof TRelations extends infer EKey ?
+    EKey extends keyof TRelations ?
+      IfThenElse<
+        Equals<TRelations[EKey]["name"], TRelationsName>,
+        TRelations[EKey]["table"]["_"]["name"],
+        never
+      >
+    : never
+  : never;
 
 type RestructuredRelations<
   TRelations extends ExtractTablesWithRelationsParts<
@@ -61,10 +77,17 @@ type RestructuredRelations<
     Record<string, Table>
   >,
 > = {
-  [Key in keyof TRelations as ConvertCase<
-    TRelations[Key]["table"]["_"]["name"],
-    "camelCase"
-  >]: TRelations[Key]["relations"];
+  [Key in keyof TRelations as TRelations[Key]["table"]["_"]["name"]]: {
+    [RKey in keyof TRelations[Key]["relations"]]: TRelations[Key]["relations"][RKey] extends (
+      infer ERelation
+    ) ?
+      ERelation extends One<infer ETarget, infer EOptional> ?
+        One<GetTableByRelationName<TRelations, ETarget>, EOptional>
+      : ERelation extends Many<infer ETarget> ?
+        Many<GetTableByRelationName<TRelations, ETarget>>
+      : ERelation
+    : never;
+  };
 };
 
 type GetRelationInfo<
@@ -77,16 +100,16 @@ type SelectNestedRelations<
   TableName extends string,
   TRelations extends RestructuredRelations,
 > =
-  TRelations[ConvertCase<TableName, "camelCase">] extends infer CRelation ?
-    CRelation extends Record<string, AnyRelation> ?
+  TRelations[TableName] extends infer ERelation ?
+    ERelation extends Record<string, AnyRelation> ?
       IfThenElse<
-        UnionIsEmpty<keyof CRelation>,
+        UnionIsEmpty<keyof ERelation>,
         never,
         {
-          [RKey in keyof CRelation]?:
+          [RKey in keyof ERelation]?:
             | true
-            | (CRelation[RKey] extends Relation<infer TargetTableName> ?
-                SelectNestedRelations<TargetTableName, TRelations>
+            | (ERelation[RKey] extends Relation<infer ETargetTableName> ?
+                SelectNestedRelations<ETargetTableName, TRelations>
               : never);
         }
       >
@@ -102,10 +125,10 @@ type SchemaWithSelectedNestedRelations<
   TSelectedNestedRelations extends SelectNestedRelations<string, TRelations>,
 > =
   TModifiedSchema[CurrentEntry]["select"] extends (
-    z.ZodObject<infer InnerObject>
+    z.ZodObject<infer EInnerObject>
   ) ?
     z.ZodObject<
-      InnerObject & {
+      EInnerObject & {
         [Key in keyof TSelectedNestedRelations]: GetRelationInfo<
           TRelations,
           CurrentEntry & keyof TRelations,
@@ -137,10 +160,11 @@ type SchemaWithSelectedNestedRelations<
   : never;
 
 type ModifiedSchemaWithRelations<
-  TBaseSchema extends Schemas,
-  TModifications extends Modification<TBaseSchema>,
+  TBaseSchema extends Schemas = Schemas,
+  TModifications extends Modification<TBaseSchema> = Modification<TBaseSchema>,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  TSchemaRelations extends ExtractTablesWithRelationsParts<any, any>,
+  TSchemaRelations extends ExtractTablesWithRelationsParts<any, any> =
+    ExtractTablesWithRelationsParts<any, any>,
   TRestructuredRelations extends RestructuredRelations =
     RestructuredRelations<TSchemaRelations>,
   TModifiedSchema extends ModifiedSchema<TBaseSchema, TModifications> =
@@ -148,10 +172,10 @@ type ModifiedSchemaWithRelations<
 > = {
   [Key in keyof TModifiedSchema]: TModifiedSchema[Key]
     & (SelectNestedRelations<Key & string, TRestructuredRelations> extends (
-      infer TSelectNestedRelations
+      infer ESelectNestedRelations
     ) ?
       IfThenElse<
-        UnionIsEmpty<TSelectNestedRelations>,
+        UnionIsEmpty<ESelectNestedRelations>,
         object,
         {
           selectWithRelations: <
@@ -217,6 +241,9 @@ export type InferInnerSchema<
 > = {
   [Key in keyof TInferredModifiedSchema]: TInferredModifiedSchema[Key][Inner];
 };
+
+// TODO
+//export type SelectWith<TModifiedSchemaWithRelations extends ModifiedSchemaWithRelations, TKey extends keyof TModifiedSchemaWithRelations, TSelectedNestedRelations extends SelectNestedRelations> = ;
 
 export function createSchemaModifier<T extends Record<string, Table>>(
   schema: T,
