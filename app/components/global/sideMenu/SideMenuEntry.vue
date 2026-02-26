@@ -1,6 +1,7 @@
 <template>
   <button
-    class="w-full flex flex-row dark:text-surface-400 text-surface-500 dark:hover:bg-surface-800 hover:bg-surface-100 duration-100"
+    class="w-full flex flex-row p-2 gap-2 dark:text-surface-400 text-surface-500 dark:hover:bg-surface-800 hover:bg-surface-100 duration-100 content-center justify-center cursor-pointer"
+    :aria-expanded="expanded"
   >
     <slot name="icon">
       <i
@@ -9,7 +10,7 @@
       />
     </slot>
     <slot>
-      <span v-if="expanded">
+      <span v-if="expanded" class="content-center text-start grow">
         {{ label }}
       </span>
     </slot>
@@ -19,5 +20,3 @@
 <script lang="ts" setup>
 defineProps<{ expanded?: boolean; icon?: string; label: string }>();
 </script>
-
-<style></style>

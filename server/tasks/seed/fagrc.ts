@@ -11,20 +11,9 @@ import {
   processable,
   processor,
   recipe,
-} from "hub:db:schema";
+} from "@nuxthub/db/schema";
 import { junctionProcessableRecipe } from "~~/server/db/schema/fagrc";
-import type {
-  JunctionProcessableRecipe,
-  JunctionProcessorRecipe,
-} from "~~/server/utils/types";
-import type {
-  Game,
-  Icon,
-  Mod,
-  Processable,
-  Processor,
-  Recipe,
-} from "~~/shared/types/db";
+import type { DBSchema } from "~~/shared/types/schema";
 
 const insert = <T extends TableConfig>(it: {
   table: PgTableWithColumns<T>;
@@ -78,7 +67,7 @@ export default defineTask({
   },
 });
 
-const initialIcons: Icon.Insert[] = [
+const initialIcons: DBSchema["fagrc_icon"]["insert"][] = [
   // Placeholder
   { name: "Placeholder Icon", svg: "" },
 
@@ -89,7 +78,7 @@ const initialIcons: Icon.Insert[] = [
   },
 ];
 
-const initialGames: Game.Insert[] = [
+const initialGames: DBSchema["fagrc_game"]["insert"][] = [
   {
     name: "Factorio",
     description: "You know what it is",
@@ -117,7 +106,7 @@ const initialGames: Game.Insert[] = [
   },
 ];
 
-const initialMods: Mod.Insert[] = [
+const initialMods: DBSchema["fagrc_mod"]["insert"][] = [
   {
     gameId: 1,
     name: "Space Age",
@@ -126,7 +115,7 @@ const initialMods: Mod.Insert[] = [
   },
 ];
 
-const initialProcessables: Processable.Insert[] = [
+const initialProcessables: DBSchema["fagrc_processable"]["insert"][] = [
   { name: "Stone furnace", description: "Basic furnace", gameId: 1, iconId: 1 },
   {
     name: "Iron Ore",
@@ -161,16 +150,16 @@ const initialProcessables: Processable.Insert[] = [
   },
 ];
 
-const initialRecipes: Recipe.Insert[] = [{ duration: 0.5 }];
+const initialRecipes: DBSchema["fagrc_recipe"]["insert"][] = [{ duration: 0.5 }];
 
-const initialProcessors: Processor.Insert[] = [
+const initialProcessors: DBSchema["fagrc_processor"]["insert"][] = [
   { processableId: 1, energyConsumption: 90e3, craftingSpeed: 1 },
 ];
 
-const initialJunctionProcessorRecipe: JunctionProcessorRecipe.Insert[] = [
+const initialJunctionProcessorRecipe: DBSchema["fagrc_junction_processor_recipe"]["insert"][] = [
   { processorId: 1, recipeId: 1 },
 ];
-const initialJunctionProcessableRecipe: JunctionProcessableRecipe.Insert[] = [
+const initialJunctionProcessableRecipe: DBSchema["fagrc_junction_processable_recipe"]["insert"][] = [
   {
     processableId: 1,
     recipeId: 1,

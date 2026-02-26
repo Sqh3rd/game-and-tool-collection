@@ -28,7 +28,20 @@
           :expanded="isExpanded"
           :label="game.name"
           @click.prevent="selectGame(game)"
-        />
+        >
+          <template #icon>
+            <IconExternal
+              v-if="game.icon.svg"
+              :src="parseSimpleSVG(game.icon.svg)"
+              width="2rem"
+              height="2rem"
+            />
+            <span
+              v-else
+              class="w-8 h-8"
+            />
+          </template>
+        </SideMenuEntry>
       </template>
     </SideMenu>
     <slot />
@@ -38,7 +51,7 @@
 <script setup lang="ts">
 import SideMenu from "~/components/global/sideMenu/SideMenu.vue";
 import SideMenuEntry from "~/components/global/sideMenu/SideMenuEntry.vue";
-import type { Game } from "~~/shared/types/db";
+import IconExternal from "~/components/icons/IconExternal.vue";
 
 const [isExpanded, toggleExpanded] = useToggle(true);
 
@@ -46,7 +59,7 @@ const fagrcStore = useFagrcStore();
 
 const games = fagrcStore.games;
 
-const selectGame = (game: Game.Select) => {
+const selectGame = (game: SelectSchema["fagrc_game"]) => {
   fagrcStore.setCurrentGame(game);
   toggleExpanded();
 };

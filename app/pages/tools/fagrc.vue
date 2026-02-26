@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-const ID = Symbol(this);
+const ID = Symbol();
 
 const fagrcStore = useFagrcStore();
 const spinnerStore = useSpinnerStore();

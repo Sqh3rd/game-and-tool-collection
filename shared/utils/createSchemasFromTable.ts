@@ -1,5 +1,6 @@
 import {
   getTableName,
+  isTable,
   type AnyRelation,
   type AnyRelationsBuilderConfig,
   type ExtractTablesWithRelationsParts,
@@ -243,7 +244,7 @@ export type InferInnerSchema<
 };
 
 // TODO
-//export type SelectWith<TModifiedSchemaWithRelations extends ModifiedSchemaWithRelations, TKey extends keyof TModifiedSchemaWithRelations, TSelectedNestedRelations extends SelectNestedRelations> = ;
+//type _SelectWith<TRelations extends RestructuredRelations, TModifiedSchemaWithRelations extends ModifiedSchemaWithRelations, TKey extends keyof TRelations, TSelectedNestedRelations extends SelectNestedRelations<TKey & string, TRelations>> = TModifiedSchemaWithRelations;
 
 export function createSchemaModifier<T extends Record<string, Table>>(
   schema: T,
@@ -273,6 +274,7 @@ class InternalSchemaModifier<T extends Record<string, Table>> {
     for (const key in this.schema) {
       const table = this.schema[key];
       if (!table) continue;
+      const tableName = getTableName(table);
 
       const baseSchemaGroup = {
         insert: createInsertSchema(table),
@@ -280,10 +282,10 @@ class InternalSchemaModifier<T extends Record<string, Table>> {
         update: createUpdateSchema(table),
       };
       const modifiedSchemaGroup =
-        key in this.modifications ?
-          this.modifications[key]?.(baseSchemaGroup)
+        tableName in this.modifications ?
+          this.modifications[tableName]?.(baseSchemaGroup)
         : undefined;
-      modifiedSchema[key] = { ...baseSchemaGroup, ...modifiedSchemaGroup };
+      modifiedSchema[tableName] = { ...baseSchemaGroup, ...modifiedSchemaGroup };
     }
     return modifiedSchema;
   }
@@ -302,8 +304,9 @@ class InternalSchemaModifier<T extends Record<string, Table>> {
       if (!selectedRelations[key]) continue;
       const currentRelation = relations[currentEntry]?.[key];
       if (!currentRelation) throw new Error("Invalid relation");
-      const target = convertCase(currentRelation.targetTableName, "camelCase");
-      if (!modifiedSchema[target]) throw new Error("Relation target not found");
+      if (!isTable(currentRelation.targetTable)) throw new Error("Relation target is not a table");
+      const target = getTableName(currentRelation.targetTable);
+      if (!modifiedSchema[target]) throw new Error("Relation target not found in source schema");
 
       const innerSchema =
         typeof selectedRelations[key] === "object" ?
@@ -350,7 +353,7 @@ class InternalSchemaModifier<T extends Record<string, Table>> {
       if (!relation) continue;
       const tableName = getTableName(relation.table);
       if (!tableName) continue;
-      relationsByTableName[convertCase(tableName, "camelCase")] =
+      relationsByTableName[tableName] =
         relation.relations;
     }
 
@@ -366,6 +369,6 @@ class InternalSchemaModifier<T extends Record<string, Table>> {
           selectedRelations,
         );
     }
-    return schemaWithRelationsExtension;
+    return { create: () => schemaWithRelationsExtension };
   }
 }

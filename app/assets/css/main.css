@@ -77,7 +77,7 @@
   --p-surface-950: #09090b;
 }
 
-:root {
+@theme {
   --p-primary-color: light-dark(var(--p-primary-500), var(--p-primary-400));
   --p-primary-contrast-color: light-dark(
     var(--p-surface-0),

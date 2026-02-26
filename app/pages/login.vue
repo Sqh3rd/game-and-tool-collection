@@ -61,7 +61,6 @@ import InputText from "~/components/volt/InputText.vue";
 import Message from "~/components/volt/Message.vue";
 import Password from "~/components/volt/Password.vue";
 import { useSpinnerStore } from "~/stores/spinner";
-import { loginSchema, serverErrorSchema, type Login } from "~~/shared/types/db";
 
 const ID = Symbol(this);
 
