@@ -1,13 +1,13 @@
 //import { relations, schema } from "@nuxthub/db";
+import { relations } from "@nuxthub/db/relations";
+import * as schema from "@nuxthub/db/schema";
 import { extractTablesFromSchema } from "drizzle-orm";
 import * as z from "zod";
 import {
   createSchemaModifier,
   type InferInnerSchema,
   type InferModifiedSchema,
-} from "../utils/createSchemasFromTable";
-import * as schema from "@nuxthub/db/schema";
-import { relations } from "@nuxthub/db/relations";
+} from "../utils/createSchemaModifier";
 
 export const timestampMask = { createdAt: true, updatedAt: true } as const;
 
@@ -112,8 +112,12 @@ export const dbSchemas = createSchemaModifier(extractTablesFromSchema(schema))
     update: update.omit(timestampMask),
   }))
   .modify("fagrc_junction_processable_recipe", ({ insert, update }) => ({
-    insert: insert.safeExtend({ type: z.enum(["IN", "OUT"]).optional()}).omit(timestampMask),
-    update: update.safeExtend({ type: z.enum(["IN", "OUT"]).optional()}).omit(timestampMask),
+    insert: insert
+      .safeExtend({ type: z.enum(["IN", "OUT"]).optional() })
+      .omit(timestampMask),
+    update: update
+      .safeExtend({ type: z.enum(["IN", "OUT"]).optional() })
+      .omit(timestampMask),
   }))
   .withRelations(relations)
   .create();

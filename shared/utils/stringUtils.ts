@@ -1,8 +1,8 @@
 import type {
-    Case,
-    ConvertCase,
-    GetCase,
-    SplitByCase,
+  Case,
+  ConvertCase,
+  GetCase,
+  SplitByCase,
 } from "./stringUtils.types";
 
 export const getCase = <S extends string>(s: S): GetCase<S> => {
@@ -45,7 +45,7 @@ export const splitByCase = <S extends string>(s: S): SplitByCase<S> => {
       break;
     }
     case "kebap-case": {
-        result.push(...s.split("-"));
+      result.push(...s.split("-"));
       break;
     }
     case "snake_case": {
@@ -58,8 +58,9 @@ export const splitByCase = <S extends string>(s: S): SplitByCase<S> => {
 
 const splitCamelCase = splitByCase("camelCasE");
 
-const capitalize = <S extends string>(s: S): Capitalize<S> =>
+export const capitalize = <S extends string>(s: S): Capitalize<S> =>
   `${s.charAt(0).toUpperCase()}${s.substring(1)}` as Capitalize<S>;
+
 export const convertCase = <S extends string, Target extends Case>(
   s: S,
   target: Target,

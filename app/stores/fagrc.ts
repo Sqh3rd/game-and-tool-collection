@@ -14,44 +14,51 @@ type GameToModToDataMap<Data> = Map<
 type GMD<Data> = GameToModToDataMap<Data>;
 
 const gameSchema = dbSchemas.fagrc_game.selectWithRelations({ icon: true });
-type GameSchema = z.infer<typeof gameSchema>;
+type GameSchema = z.infer<typeof gameSchema> & { isCurrentGame?: boolean };
+type GamesById = DataGroupedByProperties<GameSchema, ["id"]>;
 
 export const useFagrcStore = defineStore("FAGRC", () => {
-  const games = ref<GameSchema[]>([]);
+  const gamesById = reactive<GamesById>(new Map());
+  const games = computed(() => gamesById.values().toArray().flat());
 
-  const currentGame = ref<SelectSchema["fagrc_game"]>();
+  const currentGame = ref<GameSchema>();
 
   const loadGames = async () => {
     const loadedGames = await $fetch("/api/fagrc/games", { method: "GET" });
-    games.value = z
-      .array(dbSchemas.fagrc_game.selectWithRelations({icon: true}))
+    const parsedGames = z
+      .array(dbSchemas.fagrc_game.selectWithRelations({ icon: true }))
       .parse(SuperJSON.parse(loadedGames as unknown as string));
+
+    gamesById.clear();
+    parsedGames.forEach((it) => gamesById.set(it.id, [it]));
   };
 
-  const setCurrentGame = (game: SelectSchema["fagrc_game"] | undefined) => {
+  const setCurrentGame = (game: GameSchema | undefined) => {
+    games.value.forEach((it) => (it.isCurrentGame = false));
     currentGame.value = game;
     if (!game) return;
-    const { id } = game;
+    game.isCurrentGame = true;
   };
 
-//  const loadMods = async () => {
-//    if (!currentGame.value) return;
-//    const gameId = currentGame.value.id;
-//    mods.set(
-//      gameId,
-//      await $fetch(`/api/fagrc/${gameId}/mods`, { method: "GET" }),
-//    );
-//  };
+  //  const loadMods = async () => {
+  //    if (!currentGame.value) return;
+  //    const gameId = currentGame.value.id;
+  //    mods.set(
+  //      gameId,
+  //      await $fetch(`/api/fagrc/${gameId}/mods`, { method: "GET" }),
+  //    );
+  //  };
 
   return {
     games,
+    gamesById,
     currentGame,
-//    mods,
-//    processables,
-//    processors,
-//    recipes,
+    //    mods,
+    //    processables,
+    //    processors,
+    //    recipes,
     loadGames,
     setCurrentGame,
-//    loadMods,
+    //    loadMods,
   };
 });

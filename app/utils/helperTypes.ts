@@ -22,3 +22,16 @@ export type GetComponentProps<T extends abstract new (...args: any) => any> =
       >
     : props
   : never;
+
+export type DataGroupedByProperties<
+  T extends object,
+  Keys extends (keyof T)[],
+  Count extends number[] = [],
+> = IfThenElse<
+  Equals<Count["length"], Keys["length"]>,
+  T,
+  Map<
+    T[Keys[Count["length"]]],
+    DataGroupedByProperties<T, Keys, [...Count, 0]>[]
+  >
+>;

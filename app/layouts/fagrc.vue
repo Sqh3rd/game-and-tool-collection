@@ -27,6 +27,7 @@
           :key="game.name"
           :expanded="isExpanded"
           :label="game.name"
+          :selected="game.isCurrentGame"
           @click.prevent="selectGame(game)"
         >
           <template #icon>
@@ -61,6 +62,6 @@ const games = fagrcStore.games;
 
 const selectGame = (game: SelectSchema["fagrc_game"]) => {
   fagrcStore.setCurrentGame(game);
-  toggleExpanded();
+  toggleExpanded(false);
 };
 </script>
