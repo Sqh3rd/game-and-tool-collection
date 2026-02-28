@@ -1,4 +1,4 @@
-export const useSpinnerStore = defineStore("SPINNER", () => {
+export const useSpinnerStore = defineStore("spinner", () => {
   // Properties
   const currentlyLoading = ref<symbol[]>([]);
 
@@ -14,5 +14,15 @@ export const useSpinnerStore = defineStore("SPINNER", () => {
     currentlyLoading.value.splice(index, 1);
   };
 
-  return { currentlyLoading, isLoading, startLoad, endLoad };
+  const load = async (it: Promise<void>) => {
+    const localSymbol = Symbol("LOCAL");
+    startLoad(localSymbol);
+    try {
+      await it;
+    } finally {
+      endLoad(localSymbol);
+    }
+  };
+
+  return { currentlyLoading, isLoading, startLoad, endLoad, load };
 });

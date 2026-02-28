@@ -1,8 +1,8 @@
 <template>
   <button
-    class="w-full flex flex-row p-2 gap-2 dark:text-surface-400 text-surface-500 dark:hover:bg-surface-800 hover:bg-surface-100 duration-100 content-center justify-center cursor-pointer rounded-lg"
+    class="w-full flex flex-row p-2 gap-2 dark:text-surface-100 text-surface-900 hover:bg-highlight data-selected:bg-highlight-emphasis duration-200 content-center justify-center cursor-pointer rounded-lg hover:shadow data-selected:shadow-md"
     :aria-expanded="expanded"
-    :p-selected="selected"
+    :data-selected="selected || undefined"
   >
     <slot name="icon">
       <i

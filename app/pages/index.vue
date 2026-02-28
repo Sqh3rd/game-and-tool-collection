@@ -11,6 +11,6 @@
 </template>
 
 <script setup lang="ts">
-import IconCustom from "~/components/icons/IconCustom.vue";
+import IconCustom from "~/components/global/icons/IconCustom.vue";
 import Divider from "~/components/volt/Divider.vue";
 </script>

@@ -10,6 +10,8 @@ export const mod = pgTable("fagrc_mod", {
   gameId: integer()
     .notNull()
     .references(() => game.id),
-  iconId: integer().references(() => icon.id),
+  iconId: integer()
+    .notNull()
+    .references(() => icon.id),
   ...timestamps,
 });

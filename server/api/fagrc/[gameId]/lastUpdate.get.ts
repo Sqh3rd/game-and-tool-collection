@@ -1,30 +1,34 @@
-import { and, eq, inArray, isNull, max, or, sql } from "drizzle-orm";
-import { processable } from "hub:db:schema";
+import { mod } from "@nuxthub/db/schema";
+import { max, sql } from "drizzle-orm";
 import * as z from "zod";
+import { _serialize } from "~~/server/utils/_serialize";
 
 const gameIdRouteParamSchema = singularIdParamSchema("gameId");
 const modIdQueryParamSchema = z.object({
-  baseGame: z.boolean(),
+  baseGame: z.boolean().optional(),
   modIds: z.array(z.number().nonnegative()).optional(),
-  entity: z.literal(["processable", "processor", "recipe"]),
+  entity: z.literal(["processable", "processor", "recipe", "mod"]),
 });
 
 const preparedStatemens = (
   baseGame: boolean,
   modIds: number[] | undefined,
 ) => ({
-  processable: db
-    .select({ updatedAt: max(processable.updatedAt) })
-    .from(processable)
-    .where(
-      and(
-        eq(processable.gameId, sql.placeholder("gameId")),
-        or(
-          baseGame ? isNull(processable.modId) : undefined,
-          modIds ? inArray(processable.modId, modIds) : undefined,
-        ),
-      ),
-    )
+  processable: db.query.processable
+    .findFirst({
+      columns: { updatedAt: true },
+      where: {
+        AND: [
+          { gameId: sql.placeholder("gameId") },
+          {
+            OR: [
+              baseGame ? { modId: { isNull: true } } : {},
+              modIds ? { modId: { arrayContains: modIds } } : {},
+            ],
+          },
+        ],
+      },
+    })
     .prepare("processableLastUpdate"),
 
   processor: db.query.processor
@@ -80,6 +84,19 @@ export default defineEventHandler(async (event) => {
     event,
     modIdQueryParamSchema.parse,
   );
+  let result: Date | undefined | null = undefined;
 
-  return await preparedStatemens(baseGame, modIds)[entity].execute({ gameId });
+  if (entity === "mod") {
+    result = (await db.select({ lastUpdate: max(mod.updatedAt) }).from(mod))[0]
+      ?.lastUpdate;
+  } else {
+    assertNotNull(baseGame);
+    result = (
+      await preparedStatemens(baseGame, modIds)[entity].execute({ gameId })
+    )?.updatedAt;
+  }
+
+  assertNotNull(result);
+
+  return _serialize(result);
 });

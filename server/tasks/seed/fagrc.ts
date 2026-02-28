@@ -1,8 +1,3 @@
-import type {
-  PgInsertValue,
-  PgTableWithColumns,
-  TableConfig,
-} from "drizzle-orm/pg-core";
 import {
   game,
   icon,
@@ -12,6 +7,11 @@ import {
   processor,
   recipe,
 } from "@nuxthub/db/schema";
+import type {
+  PgInsertValue,
+  PgTableWithColumns,
+  TableConfig,
+} from "drizzle-orm/pg-core";
 import { junctionProcessableRecipe } from "~~/server/db/schema/fagrc";
 import type { DBSchema } from "~~/shared/types/schema";
 
@@ -112,6 +112,7 @@ const initialMods: DBSchema["fagrc_mod"]["insert"][] = [
     name: "Space Age",
     link: "http://factorio.com/space-age/overview",
     description: "Official Factorio DLC",
+    iconId: 1,
   },
 ];
 
@@ -150,28 +151,30 @@ const initialProcessables: DBSchema["fagrc_processable"]["insert"][] = [
   },
 ];
 
-const initialRecipes: DBSchema["fagrc_recipe"]["insert"][] = [{ duration: 0.5 }];
+const initialRecipes: DBSchema["fagrc_recipe"]["insert"][] = [
+  { duration: 0.5 },
+];
 
 const initialProcessors: DBSchema["fagrc_processor"]["insert"][] = [
   { processableId: 1, energyConsumption: 90e3, craftingSpeed: 1 },
 ];
 
-const initialJunctionProcessorRecipe: DBSchema["fagrc_junction_processor_recipe"]["insert"][] = [
-  { processorId: 1, recipeId: 1 },
-];
-const initialJunctionProcessableRecipe: DBSchema["fagrc_junction_processable_recipe"]["insert"][] = [
-  {
-    processableId: 1,
-    recipeId: 1,
-    quantity: 1,
-    measurement: "pcs",
-    type: "OUT",
-  },
-  {
-    processableId: 5,
-    recipeId: 1,
-    quantity: 5,
-    measurement: "pcs",
-    type: "IN",
-  },
-];
+const initialJunctionProcessorRecipe: DBSchema["fagrc_junction_processor_recipe"]["insert"][] =
+  [{ processorId: 1, recipeId: 1 }];
+const initialJunctionProcessableRecipe: DBSchema["fagrc_junction_processable_recipe"]["insert"][] =
+  [
+    {
+      processableId: 1,
+      recipeId: 1,
+      quantity: 1,
+      measurement: "pcs",
+      type: "OUT",
+    },
+    {
+      processableId: 5,
+      recipeId: 1,
+      quantity: 5,
+      measurement: "pcs",
+      type: "IN",
+    },
+  ];

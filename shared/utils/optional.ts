@@ -1,19 +1,42 @@
-export type Optional<T> = {
-    map: <R>(mapFn: (arg: NonNullable<T>) => R) => Optional<R>;
-    isPresent: () => boolean;
-    get: () => T | null;
-    orThrow: () => NonNullable<T>;
+type _Optional<T, NullOption extends undefined | null = null> = {
+  filter: (filterFunc: (it: T) => boolean) => Optional<T, NullOption>;
+  map: <R>(mapFn: (arg: T) => R) => Optional<NonNullable<R>, NullOption>;
+  isPresent: () => boolean;
+  get: () => T | NullOption;
+  orElse: (other: T) => T;
+  orElseGet: (otherGetter: () => T) => T;
+  orThrow: () => T;
 
-    tryAccess: T extends object ? <TKey extends keyof T>(key: TKey) => Optional<T[TKey]> : never;
+  tryAccess: T extends object ?
+    <TKey extends keyof T>(key: TKey) => Optional<T[TKey], NullOption>
+  : never;
 };
 
-export const optional = <T>(it: T): Optional<T> => ({
-    map: <R>(mapFn: (arg: NonNullable<T>) => R) => it ? optional(mapFn(it)) : optional(null as R),
-    isPresent: () => !!it,
-    get: () => it ?? null,
-    orThrow: () => {
-        if (it) return it;
-        throw new Error();},
+export type Optional<T, NullOption extends undefined | null = null> = _Optional<
+  NonNullable<T>,
+  NullOption
+>;
 
-    tryAccess: (<TKey extends keyof T>(key: TKey) => typeof it === "object" && it && key in it ? optional(it[key]) : optional(null)) as Optional<T>["tryAccess"]
-})
+export const optional = <T, NullOption extends undefined | null = null>(
+  it: T,
+  nullOption: NullOption = null as NullOption,
+): _Optional<NonNullable<T>, NullOption> => {
+  return {
+    map: (mapFn) => optional(it ? mapFn(it) : null, nullOption),
+    filter: (filterFunc) =>
+      optional(it && filterFunc(it) ? it : null, nullOption),
+    isPresent: () => !!it,
+    get: () => it ?? nullOption,
+    orElse: (other) => it ?? other,
+    orElseGet: (otherGetter) => it ?? otherGetter(),
+    orThrow: () => {
+      if (it) return it;
+      throw new Error();
+    },
+    tryAccess: (<TKey extends keyof (T & object)>(key: TKey) =>
+      optional(
+        it && typeof it === "object" && key in it ? it[key] : null,
+        nullOption,
+      )) as _Optional<NonNullable<T>, NullOption>["tryAccess"],
+  };
+};

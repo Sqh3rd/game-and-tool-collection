@@ -1,6 +1,6 @@
-import superjson from "superjson";
+import { _serialize } from "~~/server/utils/_serialize";
 
 export default defineEventHandler(async () => {
   const games = await db.query.game.findMany({ with: { icon: true } });
-  return superjson.stringify(games) as unknown as typeof games;
+  return _serialize(games);
 });

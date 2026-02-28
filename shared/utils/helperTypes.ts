@@ -11,6 +11,19 @@ export type Equals<A, B> =
     : false
   : false;
 
+/**
+ * Assumes both A and B are unions.
+ *
+ * @returns
+ * true - if all entries of B are contained in A. (A is superset of B)
+ *
+ * false - if no entries of B are contained in A.
+ *
+ * boolean - if some entries of B are contained in A.
+ */
+type AnyOverlap<A, B> = B extends infer Entry ? Extends<Entry, A> : never;
+export type Includes<A, B> = AnyOverlap<A, B> extends false ? false : true;
+
 export type UnionIsEmpty<A> = [A] extends [never] ? true : false;
 export type UnionHasEntries<A> = Not<UnionIsEmpty<A>>;
 
