@@ -24,7 +24,10 @@
       </div>
     </template>
     <template #content>
-      <div class="flex flex-col justify-center gap-2">
+      <div
+        v-if="entries"
+        class="flex flex-col justify-center"
+      >
         <SideMenuEntry
           v-for="entry of entries"
           :key="entry.key"
@@ -37,14 +40,17 @@
             <IconExternal
               v-if="entry.icon"
               :src="entry.icon"
-              class="w-8 h-8"
             />
-            <span
-              v-else
-              class="w-8 h-8"
-            />
+            <span v-else>{{ abbreviate(entry.label) }}</span>
           </template>
         </SideMenuEntry>
+      </div>
+      <div v-else>
+        <SideMenuEntrySkeleton
+          v-for="n in 10"
+          :key="n"
+          :expanded="isExpanded"
+        />
       </div>
     </template>
   </SideMenu>
@@ -52,6 +58,7 @@
 
 <script lang="ts" setup>
 import IconExternal from "../icons/IconExternal.vue";
+import SideMenuEntrySkeleton from "./SideMenuEntrySkeleton.vue";
 
 export type SideMenuIconEntry = {
   key: number | string;
@@ -63,9 +70,16 @@ export type SideMenuIconEntry = {
 defineProps<{
   title: string;
   isExpanded: boolean;
-  entries: SideMenuIconEntry[];
+  entries: SideMenuIconEntry[] | null;
 }>();
 defineEmits<{ toggleExpanded: []; selectEntry: [entry: SideMenuIconEntry] }>();
+
+const abbreviate = (it: string) => {
+  console.log(`Abbreviating "${it}"`);
+  const split = it.split(" ");
+  if (split.length === 1) return it.substring(0, 2);
+  return split.slice(0, 2).reduce((prev, cur) => prev + cur.charAt(0), "");
+};
 </script>
 
 <style></style>

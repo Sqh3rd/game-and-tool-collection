@@ -8,9 +8,11 @@
       @toggle-expanded="toggleGamesExpanded"
     />
     <SideMenuWithIconEntries
+      v-if="isAnyGameSelected"
       :is-expanded="isModsExpanded"
       :entries="modEntries"
       title="Mods"
+      @select-entry="selectMod"
       @toggle-expanded="toggleModsExpanded"
     />
     <slot />
@@ -28,9 +30,10 @@ const [isModsExpanded, toggleModsExpanded] = useToggle(true);
 const fagrcStore = useFagrcStore();
 const spinnerStore = useSpinnerStore();
 
-const games = fagrcStore.games;
+const isAnyGameSelected = computed(() => fagrcStore.currentGame !== undefined);
+
 const gameEntries = computed((): SideMenuIconEntry[] =>
-  games.map((it) => ({
+  fagrcStore.games.map((it) => ({
     key: it.id,
     isSelected: !!it.isSelected,
     label: it.name,
@@ -41,9 +44,8 @@ const gameEntries = computed((): SideMenuIconEntry[] =>
       .get(),
   })),
 );
-const mods = fagrcStore.mods;
 const modEntries = computed((): SideMenuIconEntry[] =>
-  mods.map((it) => ({
+  fagrcStore.mods.map((it) => ({
     key: it.id,
     isSelected: !!it.isSelected,
     label: it.name,
@@ -54,17 +56,25 @@ const modEntries = computed((): SideMenuIconEntry[] =>
       .get(),
   })),
 );
-watch(games, () => console.log("Games changed"));
-watch(gameEntries, () => console.log("Game entries changed"));
+watch(modEntries, () => {
+  console.log("Mod entries changed");
+  console.log("Mod entries: ", modEntries);
+});
 
 const selectGame = (entry: SideMenuIconEntry) => {
-  const game = games.find((it) => it.id === entry.key);
+  const game = fagrcStore.games.find((it) => it.id === entry.key);
   assertNotNull(game);
   const isDifferentGame = fagrcStore.setCurrentGame(game);
   toggleGamesExpanded(false);
   if (!isDifferentGame) return;
 
   toggleModsExpanded(isDifferentGame);
-  spinnerStore.load(fagrcStore.loadMods());
+  fagrcStore.loadMods();
+};
+
+const selectMod = (entry: SideMenuIconEntry) => {
+  const mod = fagrcStore.mods.find((it) => it.id === entry.key);
+  assertNotNull(mod);
+  fagrcStore.toggleModSelected(mod);
 };
 </script>
