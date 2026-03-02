@@ -24,8 +24,18 @@
       </div>
     </template>
     <template #content>
+      <div v-if="!entries">
+        <SideMenuEntrySkeleton
+          v-for="n in 10"
+          :key="n"
+          :expanded="isExpanded"
+        />
+      </div>
+      <div v-else-if="!entries.length">
+        <span>{{ placeholderText }}</span>
+      </div>
       <div
-        v-if="entries"
+        v-else
         class="flex flex-col justify-center"
       >
         <SideMenuEntry
@@ -44,13 +54,6 @@
             <span v-else>{{ abbreviate(entry.label) }}</span>
           </template>
         </SideMenuEntry>
-      </div>
-      <div v-else>
-        <SideMenuEntrySkeleton
-          v-for="n in 10"
-          :key="n"
-          :expanded="isExpanded"
-        />
       </div>
     </template>
   </SideMenu>
@@ -71,6 +74,7 @@ defineProps<{
   title: string;
   isExpanded: boolean;
   entries: SideMenuIconEntry[] | null;
+  placeholderText?: string;
 }>();
 defineEmits<{ toggleExpanded: []; selectEntry: [entry: SideMenuIconEntry] }>();
 

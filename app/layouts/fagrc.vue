@@ -11,6 +11,7 @@
       v-if="isAnyGameSelected"
       :is-expanded="isModsExpanded"
       :entries="modEntries"
+      placeholder-text="No mods found for current game"
       title="Mods"
       @select-entry="selectMod"
       @toggle-expanded="toggleModsExpanded"
