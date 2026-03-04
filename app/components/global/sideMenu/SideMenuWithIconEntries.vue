@@ -31,8 +31,13 @@
           :expanded="isExpanded"
         />
       </div>
-      <div v-else-if="!entries.length">
-        <span>{{ placeholderText }}</span>
+      <div v-else-if="!entries.length && placeholderText">
+        <SideMenuEntry
+          :expanded="isExpanded"
+          :label="placeholderText"
+          :disabled="true"
+          icon="pi-times"
+        />
       </div>
       <div
         v-else
@@ -73,7 +78,7 @@ export type SideMenuIconEntry = {
 defineProps<{
   title: string;
   isExpanded: boolean;
-  entries: SideMenuIconEntry[] | null;
+  entries: SideMenuIconEntry[] | null | undefined;
   placeholderText?: string;
 }>();
 defineEmits<{ toggleExpanded: []; selectEntry: [entry: SideMenuIconEntry] }>();

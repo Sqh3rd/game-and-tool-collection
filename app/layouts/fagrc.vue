@@ -29,41 +29,40 @@ const [isGamesExpanded, toggleGamesExpanded] = useToggle(true);
 const [isModsExpanded, toggleModsExpanded] = useToggle(true);
 
 const fagrcStore = useFagrcStore();
-const spinnerStore = useSpinnerStore();
 
 const isAnyGameSelected = computed(() => fagrcStore.currentGame !== undefined);
 
-const gameEntries = computed((): SideMenuIconEntry[] =>
-  fagrcStore.games.map((it) => ({
-    key: it.id,
-    isSelected: !!it.isSelected,
-    label: it.name,
+const gameEntries = computed(() =>
+  fagrcStore.games?.map(
+    (it): SideMenuIconEntry => ({
+      key: it.id,
+      isSelected: !!it.isSelected,
+      label: it.name,
 
-    icon: optional(it.icon.svg, undefined)
-      .filter((it) => !!it)
-      .map(parseSimpleSVG)
-      .get(),
-  })),
+      icon: optional(it.icon.svg, undefined)
+        .filter((it) => !!it)
+        .map(parseSimpleSVG)
+        .get(),
+    }),
+  ),
 );
-const modEntries = computed((): SideMenuIconEntry[] =>
-  fagrcStore.mods.map((it) => ({
-    key: it.id,
-    isSelected: !!it.isSelected,
-    label: it.name,
+const modEntries = computed(() =>
+  fagrcStore.mods?.map(
+    (it): SideMenuIconEntry => ({
+      key: it.id,
+      isSelected: !!it.isSelected,
+      label: it.name,
 
-    icon: optional(it.icon.svg, undefined)
-      .filter((it) => !!it)
-      .map(parseSimpleSVG)
-      .get(),
-  })),
+      icon: optional(it.icon.svg, undefined)
+        .filter((it) => !!it)
+        .map(parseSimpleSVG)
+        .get(),
+    }),
+  ),
 );
-watch(modEntries, () => {
-  console.log("Mod entries changed");
-  console.log("Mod entries: ", modEntries);
-});
 
 const selectGame = (entry: SideMenuIconEntry) => {
-  const game = fagrcStore.games.find((it) => it.id === entry.key);
+  const game = fagrcStore.games?.find((it) => it.id === entry.key);
   assertNotNull(game);
   const isDifferentGame = fagrcStore.setCurrentGame(game);
   toggleGamesExpanded(false);
@@ -74,7 +73,7 @@ const selectGame = (entry: SideMenuIconEntry) => {
 };
 
 const selectMod = (entry: SideMenuIconEntry) => {
-  const mod = fagrcStore.mods.find((it) => it.id === entry.key);
+  const mod = fagrcStore.mods?.find((it) => it.id === entry.key);
   assertNotNull(mod);
   fagrcStore.toggleModSelected(mod);
 };

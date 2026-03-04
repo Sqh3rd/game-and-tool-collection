@@ -17,17 +17,16 @@ const compareLastUpdates = (local: Date, request: string) => {
 };
 
 export const useFagrcStore = defineStore("fagrc", () => {
-  const games = ref<GameSchema[]>([]);
+  const games = ref<GameSchema[]>();
   const currentGame = ref<GameSchema>();
 
   const _modsByGame = reactive<ModsByGame>(new Map());
   const _modsLastUpdateMap = reactive<Map<number, Date>>(new Map());
 
-  const mods = computed(
-    () => _modsByGame.get(currentGame.value?.id ?? -1) ?? [],
-  );
+  const mods = computed(() => _modsByGame.get(currentGame.value?.id ?? -1));
 
   const loadGames = async () => {
+    games.value = undefined;
     const loadedGames = await $fetch("/api/fagrc/games", { method: "GET" });
     const parsedGames = z.array(gameSchema).parse(_parse(loadedGames));
 
@@ -45,6 +44,8 @@ export const useFagrcStore = defineStore("fagrc", () => {
     const request = await $fetch(`/api/fagrc/${id}/lastUpdate?entity=mod`);
     if (local && compareLastUpdates(local, request)) return;
 
+    _modsByGame.delete(id);
+
     const loadedResult = await $fetch(
       `/api/fagrc/${currentGame.value.id}/mods`,
       { method: "GET" },
@@ -60,7 +61,7 @@ export const useFagrcStore = defineStore("fagrc", () => {
 
   const setCurrentGame = (game: GameSchema | undefined) => {
     const currentGameChanged = currentGame.value !== game;
-    games.value.forEach((it) => (it.isSelected = false));
+    games.value?.forEach((it) => (it.isSelected = false));
     currentGame.value = game;
     if (!game) return currentGameChanged;
     game.isSelected = true;

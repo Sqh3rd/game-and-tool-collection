@@ -1,17 +1,15 @@
 <template>
-  <div>
-    <button
-      class="w-full flex flex-row p-2 gap-2 dark:text-surface-100 text-surface-900 duration-200 items-center justify-center rounded-lg"
-      :aria-expanded="expanded"
-    >
-      <Skeleton height="2rem" width="2rem" class="shrink-0"/>
-      <Skeleton height="2rem" />
-    </button>
-  </div>
+  <SideMenuEntry :expanded="expanded">
+    <template #icon>
+      <Skeleton height="100%" />
+    </template>
+    <Skeleton height="100%" />
+  </SideMenuEntry>
 </template>
 
 <script lang="ts" setup>
-import Skeleton from '~/components/volt/Skeleton.vue';
+import Skeleton from "~/components/volt/Skeleton.vue";
+import SideMenuEntry from "./SideMenuEntry.vue";
 
 defineProps<{ expanded: boolean }>();
 </script>
