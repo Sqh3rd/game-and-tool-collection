@@ -4,7 +4,7 @@
     :aria-expanded="expanded"
     :data-selected="selected || undefined"
   >
-    <div class="w-8 h-8 flex flex-col justify-center content-center">
+    <div class="size-8 flex flex-col justify-center content-center shrink-0">
       <slot name="icon">
         <i
           v-if="icon"
