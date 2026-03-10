@@ -49,14 +49,15 @@
           :expanded="isExpanded"
           :label="entry.label"
           :selected="entry.isSelected"
+          :disabled="entry.disabled"
+          :icon="entry.icon"
           @click.prevent="$emit('selectEntry', entry)"
         >
-          <template #icon>
-            <IconExternal
-              v-if="entry.icon"
-              :src="entry.icon"
-            />
-            <span v-else>{{ abbreviate(entry.label) }}</span>
+          <template
+            v-if="!entry.icon"
+            #icon
+          >
+            <span>{{ abbreviate(entry.label) }}</span>
           </template>
         </SideMenuEntry>
       </div>
@@ -65,7 +66,6 @@
 </template>
 
 <script lang="ts" setup>
-import IconExternal from "../icons/IconExternal.vue";
 import SideMenuEntrySkeleton from "./SideMenuEntrySkeleton.vue";
 
 export type SideMenuIconEntry = {
@@ -73,7 +73,8 @@ export type SideMenuIconEntry = {
   label: string;
   isSelected: boolean;
 
-  icon?: SimpleSVGElement;
+  icon?: SimpleSVGElement | string;
+  disabled?: true;
 };
 defineProps<{
   title: string;

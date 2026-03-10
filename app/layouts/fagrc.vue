@@ -10,7 +10,7 @@
     <SideMenuWithIconEntries
       v-if="isAnyGameSelected"
       :is-expanded="isModsExpanded"
-      :entries="modEntries"
+      :entries="modAndBaseGameEntries"
       placeholder-text="No mods found"
       title="Mods"
       @select-entry="selectMod"
@@ -46,7 +46,17 @@ const gameEntries = computed(() =>
     }),
   ),
 );
-const modEntries = computed(() =>
+const baseGameEntry = computed(
+  (): SideMenuIconEntry => ({
+    key: -1,
+    isSelected: fagrcStore.useBaseGame,
+    label: "Base Game",
+
+    icon: undefined,
+  }),
+);
+
+const mappedMods = computed(() =>
   fagrcStore.mods?.map(
     (it): SideMenuIconEntry => ({
       key: it.id,
@@ -59,6 +69,21 @@ const modEntries = computed(() =>
         .get(),
     }),
   ),
+);
+
+const noModsEntry: SideMenuIconEntry = {
+  key: -2,
+  isSelected: false,
+  disabled: true,
+  label: "No mods found",
+  icon: "pi-times",
+};
+const modEntries = computed(() =>
+  mappedMods.value?.length ? mappedMods.value : [noModsEntry],
+);
+
+const modAndBaseGameEntries = computed(() =>
+  mappedMods.value ? [baseGameEntry.value, ...modEntries.value] : undefined,
 );
 
 const selectGame = (entry: SideMenuIconEntry) => {
@@ -74,7 +99,7 @@ const selectGame = (entry: SideMenuIconEntry) => {
 
 const selectMod = (entry: SideMenuIconEntry) => {
   const mod = fagrcStore.mods?.find((it) => it.id === entry.key);
-  assertNotNull(mod);
-  fagrcStore.toggleModSelected(mod);
+  if (mod) fagrcStore.toggleModSelected(mod);
+  else fagrcStore.toggleUseBaseGame();
 };
 </script>

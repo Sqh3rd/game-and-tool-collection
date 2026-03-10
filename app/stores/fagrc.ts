@@ -24,6 +24,7 @@ export const useFagrcStore = defineStore("fagrc", () => {
   const _modsLastUpdateMap = reactive<Map<number, Date>>(new Map());
 
   const mods = computed(() => _modsByGame.get(currentGame.value?.id ?? -1));
+  const [useBaseGame, toggleUseBaseGame] = useToggle(true);
 
   const loadGames = async () => {
     games.value = undefined;
@@ -68,8 +69,9 @@ export const useFagrcStore = defineStore("fagrc", () => {
     return currentGameChanged;
   };
 
-  const toggleModSelected = (mod: ModSchema) => {
-    mod.isSelected = !mod.isSelected;
+  const toggleModSelected = (mod: ModSchema, val?: boolean) => {
+    if (val !== undefined) mod.isSelected = val;
+    else mod.isSelected = !mod.isSelected;
   };
 
   return {
@@ -77,12 +79,14 @@ export const useFagrcStore = defineStore("fagrc", () => {
     currentGame,
 
     mods,
+    useBaseGame,
 
     loadGames,
     loadMods,
 
     setCurrentGame,
     toggleModSelected,
+    toggleUseBaseGame,
     //    loadMods,
 
     _modsByGame,

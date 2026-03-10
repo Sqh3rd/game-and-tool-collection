@@ -49,3 +49,26 @@ export type Guard<
   GuardStatement extends string,
   T,
 > = IfThenElse<Condition, GuardStatement & T, T>;
+
+export type SimpleTypes = {
+  bigint: bigint;
+  boolean: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  function: Function;
+  number: number;
+  object: object;
+  string: string;
+  symbol: symbol;
+  undefined: undefined;
+};
+
+export type GetNameOfSimpleType<T extends SimpleTypes[keyof SimpleTypes]> =
+  keyof SimpleTypes extends infer Key ?
+    Key extends keyof SimpleTypes ?
+      T extends SimpleTypes[Key] ?
+        Key
+      : never
+    : never
+  : never;
+
+export type GetSimpleTypeFromName<T extends keyof SimpleTypes> = SimpleTypes[T];
