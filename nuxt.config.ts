@@ -10,8 +10,14 @@ export default defineNuxtConfig({
   nitro: { experimental: { tasks: true } },
   vite: { plugins: [tailwindcss()] },
   hub: {
-    db: { dialect: "postgresql", casing: "snake_case", useRelationsV2: true },
+    db: {
+      dialect: "postgresql",
+      casing: "snake_case",
+      useRelationsV2: true,
+      connection: { connectionString: "" },
+    },
   },
+  storybook: { route: "/__storybook__", host: "http://localhost", port: 3001 },
 
   modules: [
     "nuxt-auth-utils",
@@ -20,5 +26,6 @@ export default defineNuxtConfig({
     "@vueuse/nuxt",
     "@nuxt/eslint",
     "@nuxt/test-utils/module",
+    //    "@nuxtjs/storybook",
   ],
 });

@@ -13,7 +13,7 @@ import type {
   TableConfig,
 } from "drizzle-orm/pg-core";
 import { junctionProcessableRecipe } from "~~/server/db/schema/fagrc";
-import type { DBSchema } from "~~/shared/types/schema";
+import type { DBSchema, InsertSchema } from "~~/shared/types/schema";
 
 const insert = <T extends TableConfig>(it: {
   table: PgTableWithColumns<T>;
@@ -67,7 +67,7 @@ export default defineTask({
   },
 });
 
-const initialIcons: DBSchema["fagrc_icon"]["insert"][] = [
+const initialIcons: InsertSchema["fagrc_icon"][] = [
   // Placeholder
   { name: "Placeholder Icon", svg: "" },
 

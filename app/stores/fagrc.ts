@@ -10,6 +10,10 @@ const modSchema = dbSchemas.fagrc_mod.selectWithRelations({ icon: true });
 type ModSchema = z.infer<typeof modSchema> & IsSelected;
 type ModsByGame = DataGroupedByProperties<ModSchema, ["gameId"]>;
 
+const recipeSchema = dbSchemas.fagrc_recipe.selectWithRelations({ icon: true });
+export type RecipeSchema = z.infer<typeof recipeSchema>;
+type RecipesByMod = DataGroupedByProperties<RecipeSchema, [""]>;
+
 const compareLastUpdates = (local: Date, request: string) => {
   const remote = z.date().parse(_parse(request));
   console.log(local, remote, remote.getTime() === local.getTime());
@@ -58,6 +62,16 @@ export const useFagrcStore = defineStore("fagrc", () => {
     _modsLastUpdateMap.set(id, parsedResult.lastUpdate);
 
     _modsByGame.set(id, [...parsedResult.data]);
+  };
+
+  const loadRecipes = async () => {
+    if (
+      !currentGame.value
+      || !_modsByGame.get(currentGame.value.id)?.some((it) => it.isSelected)
+    ) {
+      console.warn("No selected game or selected mods to load recipes for");
+      return;
+    }
   };
 
   const setCurrentGame = (game: GameSchema | undefined) => {

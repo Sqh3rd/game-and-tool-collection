@@ -1,8 +1,4 @@
-<template>
-  <NuxtLayout name="fagrc">
-    <NuxtPage />
-  </NuxtLayout>
-</template>
+<template></template>
 
 <script setup lang="ts">
 const ID = Symbol();

@@ -124,5 +124,5 @@ export const dbSchemas = createSchemaModifier(extractTablesFromSchema(schema))
 
 export type DBSchema = InferModifiedSchema<typeof dbSchemas>;
 export type InsertSchema = InferInnerSchema<DBSchema, "insert">;
-export type SelectSchema = InferInnerSchema<DBSchema, "select">;
+export type DBTable = InferInnerSchema<DBSchema, "select">;
 export type UpdateSchema = InferInnerSchema<DBSchema, "update">;
