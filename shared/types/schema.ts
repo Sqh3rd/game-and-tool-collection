@@ -96,8 +96,8 @@ export const dbSchemas = createSchemaModifier(extractTablesFromSchema(schema))
     update: update.omit(timestampMask),
   }))
   .modify("fagrc_mod", ({ insert, update }) => ({
-    insert: insert.omit(timestampMask),
-    update: update.omit(timestampMask),
+    insert: insert.omit({ ...timestampMask, baseGame: true }).safeExtend({ name: z.string(), link: z.string() }),
+    update: update.omit({ ...timestampMask, baseGame: true }),
   }))
   .modify("fagrc_processable", ({ insert, update }) => ({
     insert: insert.omit(timestampMask),

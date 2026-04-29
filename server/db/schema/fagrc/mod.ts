@@ -13,14 +13,13 @@ export const mod = pgTable(
   "fagrc_mod",
   {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
-    name: varchar().notNull().unique(),
+    name: varchar(),
     description: varchar(),
-    link: varchar().notNull(),
+    link: varchar(),
     gameId: integer()
       .notNull()
       .references(() => game.id),
     iconId: integer()
-      .notNull()
       .references(() => icon.id),
     baseGame: boolean().notNull().default(false),
     ...timestamps,

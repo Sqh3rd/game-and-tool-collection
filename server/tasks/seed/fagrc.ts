@@ -13,7 +13,7 @@ import type {
   TableConfig,
 } from "drizzle-orm/pg-core";
 import { junctionProcessableRecipe } from "~~/server/db/schema/fagrc";
-import type { DBSchema, InsertSchema } from "~~/shared/types/schema";
+import type { InsertSchema } from "~~/shared/types/schema";
 
 const insert = <T extends TableConfig>(it: {
   table: PgTableWithColumns<T>;
@@ -78,7 +78,7 @@ const initialIcons: InsertSchema["fagrc_icon"][] = [
   },
 ];
 
-const initialGames: DBSchema["fagrc_game"]["insert"][] = [
+const initialGames: InsertSchema["fagrc_game"][] = [
   {
     name: "Factorio",
     description: "You know what it is",
@@ -106,7 +106,12 @@ const initialGames: DBSchema["fagrc_game"]["insert"][] = [
   },
 ];
 
-const initialMods: DBSchema["fagrc_mod"]["insert"][] = [
+const initialMods: InsertSchema["fagrc_mod"][] = [
+  ({
+    gameId: 1,
+    baseGame: true,
+    iconId: 2,
+  } as unknown as InsertSchema["fagrc_mod"]),
   {
     gameId: 1,
     name: "Space Age",
@@ -116,52 +121,52 @@ const initialMods: DBSchema["fagrc_mod"]["insert"][] = [
   },
 ];
 
-const initialProcessables: DBSchema["fagrc_processable"]["insert"][] = [
-  { name: "Stone furnace", description: "Basic furnace", gameId: 1, iconId: 1 },
+const initialProcessables: InsertSchema["fagrc_processable"][] = [
+  { name: "Stone furnace", description: "Basic furnace", modId: 1, iconId: 1 },
   {
     name: "Iron Ore",
     description: "One of the most basic resources",
-    gameId: 1,
+    modId: 1,
     iconId: 1,
   },
   {
     name: "Copper Ore",
     description: "One of the most basic resources",
-    gameId: 1,
+    modId: 1,
     iconId: 1,
   },
   {
     name: "Iron plate",
     description: "One of the most basic resources",
-    gameId: 1,
+    modId: 1,
     iconId: 1,
   },
   {
     name: "Stone",
     description: "One of the most basic resources",
-    gameId: 1,
+    modId: 1,
     iconId: 1,
   },
   {
     name: "Coal",
     description: "Basic fuel",
-    gameId: 1,
+    modId: 1,
     energyValue: 4e6,
     iconId: 1,
   },
 ];
 
-const initialRecipes: DBSchema["fagrc_recipe"]["insert"][] = [
+const initialRecipes: InsertSchema["fagrc_recipe"][] = [
   { duration: 0.5 },
 ];
 
-const initialProcessors: DBSchema["fagrc_processor"]["insert"][] = [
+const initialProcessors: InsertSchema["fagrc_processor"][] = [
   { processableId: 1, energyConsumption: 90e3, craftingSpeed: 1 },
 ];
 
-const initialJunctionProcessorRecipe: DBSchema["fagrc_junction_processor_recipe"]["insert"][] =
+const initialJunctionProcessorRecipe: InsertSchema["fagrc_junction_processor_recipe"][] =
   [{ processorId: 1, recipeId: 1 }];
-const initialJunctionProcessableRecipe: DBSchema["fagrc_junction_processable_recipe"]["insert"][] =
+const initialJunctionProcessableRecipe: InsertSchema["fagrc_junction_processable_recipe"][] =
   [
     {
       processableId: 1,
