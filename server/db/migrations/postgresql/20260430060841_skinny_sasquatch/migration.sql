@@ -39,11 +39,11 @@ CREATE TABLE "fagrc_junction_processor_recipe" (
 --> statement-breakpoint
 CREATE TABLE "fagrc_mod" (
 	"id" integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "fagrc_mod_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START WITH 1 CACHE 1),
-	"name" varchar NOT NULL UNIQUE,
+	"name" varchar,
 	"description" varchar,
-	"link" varchar NOT NULL,
+	"link" varchar,
 	"game_id" integer NOT NULL,
-	"icon_id" integer NOT NULL,
+	"icon_id" integer,
 	"base_game" boolean DEFAULT false NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,

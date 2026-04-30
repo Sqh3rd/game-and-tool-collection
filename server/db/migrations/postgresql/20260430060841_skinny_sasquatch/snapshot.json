@@ -1,7 +1,7 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "286a63f1-3d0b-443e-9e0d-d383d3ecf402",
+  "id": "893d75b6-4f3e-4ae9-ada7-4d05466ffee9",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
@@ -424,7 +424,7 @@
     {
       "type": "varchar",
       "typeSchema": null,
-      "notNull": true,
+      "notNull": false,
       "dimensions": 0,
       "default": null,
       "generated": null,
@@ -450,7 +450,7 @@
     {
       "type": "varchar",
       "typeSchema": null,
-      "notNull": true,
+      "notNull": false,
       "dimensions": 0,
       "default": null,
       "generated": null,
@@ -476,7 +476,7 @@
     {
       "type": "integer",
       "typeSchema": null,
-      "notNull": true,
+      "notNull": false,
       "dimensions": 0,
       "default": null,
       "generated": null,
@@ -1270,17 +1270,6 @@
       "name": "fagrc_icon_svg_key",
       "schema": "public",
       "table": "fagrc_icon",
-      "entityType": "uniques"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "name"
-      ],
-      "nullsNotDistinct": false,
-      "name": "fagrc_mod_name_key",
-      "schema": "public",
-      "table": "fagrc_mod",
       "entityType": "uniques"
     },
     {

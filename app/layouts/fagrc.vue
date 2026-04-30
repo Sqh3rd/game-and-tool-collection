@@ -10,7 +10,7 @@
     <SideMenuWithIconEntries
       v-if="isAnyGameSelected"
       :is-expanded="isModsExpanded"
-      :entries="modAndBaseGameEntries"
+      :entries="modEntries"
       title="Mods"
       @select-entry="selectMod"
       @toggle-expanded="toggleModsExpanded"
@@ -45,22 +45,12 @@ const gameEntries = computed(() =>
     }),
   ),
 );
-const baseGameEntry = computed(
-  (): SideMenuIconEntry => ({
-    key: -1,
-    isSelected: fagrcStore.useBaseGame,
-    label: "Base Game",
-
-    icon: undefined,
-  }),
-);
-
 const mappedMods = computed(() =>
   fagrcStore.mods?.map(
     (it): SideMenuIconEntry => ({
       key: it.id,
       isSelected: !!it.isSelected,
-      label: it.name,
+      label: it.baseGame ? "Base Game" : it.name ?? "",
 
       icon: optional(it.icon.svg, undefined)
         .filter((it) => !!it)
@@ -79,10 +69,6 @@ const noModsEntry: SideMenuIconEntry = {
 };
 const modEntries = computed(() =>
   mappedMods.value?.length ? mappedMods.value : [noModsEntry],
-);
-
-const modAndBaseGameEntries = computed(() =>
-  mappedMods.value ? [baseGameEntry.value, ...modEntries.value] : undefined,
 );
 
 const selectGame = (entry: SideMenuIconEntry) => {

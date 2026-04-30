@@ -61,7 +61,7 @@ export const useFagrcStore = defineStore("fagrc", () => {
 
     _modsLastUpdateMap.set(id, parsedResult.lastUpdate);
 
-    _modsByGame.set(id, [...parsedResult.data]);
+    _modsByGame.set(id, parsedResult.data.map(it => ({ ...it, isSelected: it.baseGame })));
   };
 
   const loadRecipes = async () => {

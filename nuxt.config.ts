@@ -17,7 +17,12 @@ export default defineNuxtConfig({
       connection: { connectionString: "" },
     },
   },
-  storybook: { route: "/__storybook__", host: "http://localhost", port: 3001 },
+  storybook: {
+    enabled: false,
+    route: "/__storybook__",
+    host: "http://localhost",
+    port: 3001,
+  },
 
   modules: [
     "nuxt-auth-utils",
@@ -26,6 +31,6 @@ export default defineNuxtConfig({
     "@vueuse/nuxt",
     "@nuxt/eslint",
     "@nuxt/test-utils/module",
-    //    "@nuxtjs/storybook",
+    "@nuxtjs/storybook",
   ],
 });
