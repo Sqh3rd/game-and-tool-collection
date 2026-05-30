@@ -82,7 +82,7 @@ export type GetNameOfSimpleType<T extends SimpleTypes[keyof SimpleTypes]> =
 
 export type GetSimpleTypeFromName<T extends keyof SimpleTypes> = SimpleTypes[T];
 
-type MergeBehaviour = "strict" | "lenient";
+export type MergeBehaviour = "strict" | "lenient";
 
 type GetIndices<T extends any[]> =
   keyof T extends infer Key ?
@@ -154,8 +154,4 @@ export type MergeUnion<
 >;
 
 export type ExtractInnerObject<T> =
-  T extends infer Entry ?
-    Entry extends z.ZodObject<infer Inner> ?
-      Inner
-    : never
-  : never;
+  T extends z.ZodObject<infer Inner> ? Inner : never;

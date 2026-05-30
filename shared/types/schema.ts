@@ -122,7 +122,6 @@ export const dbSchemas = createSchemaModifier(extractTablesFromSchema(schema))
       .safeExtend({ type: z.enum(["IN", "OUT"]).optional() })
       .omit(timestampMask),
   }))
-  .withRelations(relations)
   .create();
 
 export type DBSchema = InferModifiedSchema<typeof dbSchemas>;
@@ -133,6 +132,36 @@ export type UpdateSchema = InferInnerSchema<DBSchema, "update">;
 const test = schemaModifier(extractTablesFromSchema(schema))
   .modifyAll(({ insert, update }) => ({
     insert: insert.omit(timestampMask),
-    update,
+    update: update.omit(timestampMask),
   }))
-  .modify("game", ({ insert, update }) => ({ insert, update }));
+  .modify("user", (base) => ({
+    insert: base.insert
+      .omit({ hashedPassword: true })
+      .safeExtend({
+        email: z.email(),
+        name: z
+          .string()
+          .trim()
+          .min(3, { error: "Must be at least 3 characters long" }),
+        password: passwordSchema,
+        confirmPassword: z.string().min(1, { error: "Field is required" }),
+      })
+      .refine((data) => data.password === data.confirmPassword, {
+        message: "Passwords do not match",
+        path: ["confirmPassword"],
+      }),
+    select: base.select
+      .omit({ hashedPassword: true, uuid: true })
+      .safeExtend({ email: z.email() }),
+    update: base.update.omit(timestampMask),
+  }))
+  .modify("fagrc_mod", ({ insert, update }) => ({
+    insert: insert
+      .omit({ baseGame: true })
+      .safeExtend({ name: z.string(), link: z.string() }),
+    update: update.omit({ baseGame: true }),
+  }))
+  .modify("fagrc_junction_processable_recipe", ({ insert, update }) => ({
+    insert: insert.safeExtend({ type: z.enum(["IN", "OUT"]).optional() }),
+    update: update.safeExtend({ type: z.enum(["IN", "OUT"]).optional() }),
+  }));
