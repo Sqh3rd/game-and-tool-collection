@@ -1,7 +1,12 @@
+allowBuilds:
+  '@parcel/watcher': set this to true or false
+  esbuild: set this to true or false
+  unrs-resolver: set this to true or false
+
 onlyBuiltDependencies:
   - '@parcel/watcher'
   - esbuild
   - unrs-resolver
 
 overrides:
-  '@nuxthub/core': link:../../.local/share/pnpm/global/5/node_modules/@nuxthub/core
+  '@nuxthub/core': link:../../../Users/mpatterer/AppData/Local/pnpm/global/5/node_modules/@nuxthub/core

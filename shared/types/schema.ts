@@ -8,6 +8,7 @@ import {
   type InferInnerSchema,
   type InferModifiedSchema,
 } from "../utils/createSchemaModifier";
+import { schemaModifier } from "../utils/schemaModifier";
 
 export const timestampMask = { createdAt: true, updatedAt: true } as const;
 
@@ -96,7 +97,9 @@ export const dbSchemas = createSchemaModifier(extractTablesFromSchema(schema))
     update: update.omit(timestampMask),
   }))
   .modify("fagrc_mod", ({ insert, update }) => ({
-    insert: insert.omit({ ...timestampMask, baseGame: true }).safeExtend({ name: z.string(), link: z.string() }),
+    insert: insert
+      .omit({ ...timestampMask, baseGame: true })
+      .safeExtend({ name: z.string(), link: z.string() }),
     update: update.omit({ ...timestampMask, baseGame: true }),
   }))
   .modify("fagrc_processable", ({ insert, update }) => ({
@@ -126,3 +129,10 @@ export type DBSchema = InferModifiedSchema<typeof dbSchemas>;
 export type InsertSchema = InferInnerSchema<DBSchema, "insert">;
 export type DBTable = InferInnerSchema<DBSchema, "select">;
 export type UpdateSchema = InferInnerSchema<DBSchema, "update">;
+
+const test = schemaModifier(extractTablesFromSchema(schema))
+  .modifyAll(({ insert, update }) => ({
+    insert: insert.omit(timestampMask),
+    update,
+  }))
+  .modify("game", ({ insert, update }) => ({ insert, update }));

@@ -19,7 +19,6 @@ import {
 } from "drizzle-orm/zod";
 import * as z from "zod";
 import type { Equals, Extends, Guard, UnionIsEmpty } from "./helperTypes";
-import { convertCase } from "./stringUtils";
 
 export type SchemaGroup<
   Insert extends z._ZodType = z.ZodObject,
@@ -285,7 +284,10 @@ class InternalSchemaModifier<T extends Record<string, Table>> {
         tableName in this.modifications ?
           this.modifications[tableName]?.(baseSchemaGroup)
         : undefined;
-      modifiedSchema[tableName] = { ...baseSchemaGroup, ...modifiedSchemaGroup };
+      modifiedSchema[tableName] = {
+        ...baseSchemaGroup,
+        ...modifiedSchemaGroup,
+      };
     }
     return modifiedSchema;
   }
@@ -304,9 +306,11 @@ class InternalSchemaModifier<T extends Record<string, Table>> {
       if (!selectedRelations[key]) continue;
       const currentRelation = relations[currentEntry]?.[key];
       if (!currentRelation) throw new Error("Invalid relation");
-      if (!isTable(currentRelation.targetTable)) throw new Error("Relation target is not a table");
+      if (!isTable(currentRelation.targetTable))
+        throw new Error("Relation target is not a table");
       const target = getTableName(currentRelation.targetTable);
-      if (!modifiedSchema[target]) throw new Error("Relation target not found in source schema");
+      if (!modifiedSchema[target])
+        throw new Error("Relation target not found in source schema");
 
       const innerSchema =
         typeof selectedRelations[key] === "object" ?
@@ -353,8 +357,7 @@ class InternalSchemaModifier<T extends Record<string, Table>> {
       if (!relation) continue;
       const tableName = getTableName(relation.table);
       if (!tableName) continue;
-      relationsByTableName[tableName] =
-        relation.relations;
+      relationsByTableName[tableName] = relation.relations;
     }
 
     for (const key in relationsByTableName) {

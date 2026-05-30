@@ -1,3 +1,5 @@
+import type z from "zod";
+
 export type IfThenElse<If extends boolean, Then, Else> =
   If extends true ? Then : Else;
 
@@ -10,6 +12,7 @@ export type Equals<A, B> =
       true
     : false
   : false;
+export type IsNever<T> = Equals<[T], [never]>;
 
 /**
  * Assumes both A and B are unions.
@@ -26,6 +29,12 @@ export type Includes<A, B> = AnyOverlap<A, B> extends false ? false : true;
 
 export type UnionIsEmpty<A> = [A] extends [never] ? true : false;
 export type UnionHasEntries<A> = Not<UnionIsEmpty<A>>;
+export type UnionToIntersection<A> =
+  (A extends any ? (a: A) => void : never) extends (a: infer B) => void ? B
+  : never;
+
+export type Values<T extends object> = T[keyof T];
+export type Narrow<T, U> = IfThenElse<Extends<T, U>, T, U>;
 
 export type TryAccess<
   Key extends string | number | symbol,
@@ -72,3 +81,81 @@ export type GetNameOfSimpleType<T extends SimpleTypes[keyof SimpleTypes]> =
   : never;
 
 export type GetSimpleTypeFromName<T extends keyof SimpleTypes> = SimpleTypes[T];
+
+type MergeBehaviour = "strict" | "lenient";
+
+type GetIndices<T extends any[]> =
+  keyof T extends infer Key ?
+    Key extends `${infer _ extends number}` ?
+      Key
+    : never
+  : never;
+
+type MergeStrict<T extends object[]> =
+  T extends [infer First extends object, ...infer Rest extends object[]] ?
+    First & MergeStrict<Rest>
+  : object;
+type MergeLenient<T extends object[]> =
+  GetIndices<T> extends infer Indices extends keyof T ?
+    {
+      [Key in keyof MergeStrict<T>]: Indices extends infer Index ?
+        Index extends Indices ?
+          Key extends keyof T[Index] ?
+            T[Index][Key]
+          : never
+        : never
+      : never;
+    }
+  : never;
+export type Merge<
+  T extends object[],
+  Behaviour extends MergeBehaviour = "lenient",
+> = IfThenElse<Equals<Behaviour, "strict">, MergeStrict<T>, MergeLenient<T>>;
+
+export type AllKeysOf<T extends object> =
+  T extends infer Entry ?
+    Entry extends T ?
+      keyof Entry
+    : object
+  : object;
+export type IntersectKeysOf<T extends object> =
+  (T extends object ? (a: keyof T) => void : never) extends (
+    (a: infer U) => void
+  ) ?
+    U
+  : never;
+type MergeUnionStrict<T extends object> = {
+  [Key in IntersectKeysOf<T> & (string | number | symbol)]: UnionToIntersection<
+    T extends infer Entry ?
+      Entry extends T ?
+        Key extends keyof Entry ?
+          Entry[Key]
+        : never
+      : never
+    : never
+  >;
+};
+type MergeUnionLenient<T extends object> = {
+  [Key in AllKeysOf<T> & (string | number)]: T extends infer Entry ?
+    Entry extends T ?
+      Key extends keyof Entry ?
+        Entry[Key]
+      : never
+    : never
+  : never;
+};
+export type MergeUnion<
+  T extends object,
+  Behaviour extends MergeBehaviour = "lenient",
+> = IfThenElse<
+  Equals<Behaviour, "strict">,
+  MergeUnionStrict<T>,
+  MergeUnionLenient<T>
+>;
+
+export type ExtractInnerObject<T> =
+  T extends infer Entry ?
+    Entry extends z.ZodObject<infer Inner> ?
+      Inner
+    : never
+  : never;
