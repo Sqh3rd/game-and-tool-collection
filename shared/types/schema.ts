@@ -1,4 +1,3 @@
-//import { relations, schema } from "@nuxthub/db";
 import { relations } from "@nuxthub/db/relations";
 import * as schema from "@nuxthub/db/schema";
 import { extractTablesFromSchema } from "drizzle-orm";
@@ -122,6 +121,7 @@ export const dbSchemas = createSchemaModifier(extractTablesFromSchema(schema))
       .safeExtend({ type: z.enum(["IN", "OUT"]).optional() })
       .omit(timestampMask),
   }))
+  .withRelations(relations)
   .create();
 
 export type DBSchema = InferModifiedSchema<typeof dbSchemas>;
@@ -130,6 +130,7 @@ export type DBTable = InferInnerSchema<DBSchema, "select">;
 export type UpdateSchema = InferInnerSchema<DBSchema, "update">;
 
 const test = schemaModifier(extractTablesFromSchema(schema))
+  .withRelations(relations)
   .modifyAll(({ insert, update }) => ({
     insert: insert.omit(timestampMask),
     update: update.omit(timestampMask),
@@ -153,7 +154,6 @@ const test = schemaModifier(extractTablesFromSchema(schema))
     select: base.select
       .omit({ hashedPassword: true, uuid: true })
       .safeExtend({ email: z.email() }),
-    update: base.update.omit(timestampMask),
   }))
   .modify("fagrc_mod", ({ insert, update }) => ({
     insert: insert
@@ -164,4 +164,7 @@ const test = schemaModifier(extractTablesFromSchema(schema))
   .modify("fagrc_junction_processable_recipe", ({ insert, update }) => ({
     insert: insert.safeExtend({ type: z.enum(["IN", "OUT"]).optional() }),
     update: update.safeExtend({ type: z.enum(["IN", "OUT"]).optional() }),
-  }));
+  }))
+  .create();
+
+test.fagrc_game.

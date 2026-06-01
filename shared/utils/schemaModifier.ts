@@ -1,18 +1,36 @@
-import type {
-  AnyRelationsBuilderConfig,
-  ExtractTablesWithRelationsParts,
-  Many,
-  One,
-  Table,
+import {
+  getTableName,
+  isTable,
+  Relation,
+  type AnyRelationsBuilderConfig,
+  type ExtractTablesWithRelationsParts,
+  type Many,
+  type One,
+  type Schema,
+  type SchemaEntry,
+  type Table,
 } from "drizzle-orm";
-import type { BuildSchema, CoerceOptions } from "drizzle-orm/zod";
-import type z from "zod";
+import {
+  createInsertSchema,
+  createSelectSchema,
+  createUpdateSchema,
+  type BuildSchema,
+  type CoerceOptions,
+} from "drizzle-orm/zod";
+import z from "zod";
 import type {
   ExtractInnerObject,
   IsNever,
   MergeBehaviour,
   MergeUnion,
 } from "./helperTypes";
+import { keyof } from "zod";
+import {
+  modificationPipe,
+  pipe,
+  type ModificationPipe,
+  type Pipe,
+} from "./pipe";
 
 type Operations = "insert" | "select" | "update";
 
@@ -26,8 +44,7 @@ type SchemaGroupFromTable<TTable extends Table> = SchemaGroup<
   BuildSchema<"insert", TTable["_"]["columns"], undefined, CoerceOptions>,
   BuildSchema<"select", TTable["_"]["columns"], undefined, CoerceOptions>,
   BuildSchema<"update", TTable["_"]["columns"], undefined, CoerceOptions>
->
-  & Record<Operations, z.ZodObject>;
+>;
 
 type BaseSchema<T extends Record<string, Table> = Record<string, Table>> = {
   [Key in keyof T as T[Key]["_"]["name"]]: SchemaGroupFromTable<T[Key]>;
@@ -76,22 +93,38 @@ type Relations<
   };
 };
 
-// type ModifyEntry<T extends Record<string, Table>, TSchema extends BaseSchema<>>;
+type ModifiedSchema<
+  T extends Record<string, Table> = Record<string, Table>,
+  TSchema extends BaseSchema<T> = BaseSchema<T>,
+  TModifications extends Modifications<TSchema> = Modifications<TSchema>,
+> = {
+  [Key in keyof TSchema]: ApplyDiffsByOperation<
+    TSchema[Key] & Record<Operations, object>,
+    TModifications[Key]
+  >;
+};
+
+type SelectNestedRelations<
+  TModifiedSchema extends ModifiedSchema,
+  TRelations extends ExtractTablesWithRelationsParts<
+    AnyRelationsBuilderConfig,
+    Record<string, Table>
+  >,
+> = {};
 
 type ModifiedSchemaWithRelations<
   T extends Record<string, Table>,
   TSchema extends BaseSchema<T>,
   TModifications extends Modifications<TSchema>,
   TRelations extends
-    | Relations<ExtractTablesWithRelationsParts<AnyRelationsBuilderConfig, T>>
+    | ExtractTablesWithRelationsParts<AnyRelationsBuilderConfig, T>
     | never = never,
+  _TModifiedSchema extends ModifiedSchema<T, TSchema, TModifications> =
+    ModifiedSchema<T, TSchema, TModifications>,
 > = {
-  [Key in keyof T]: ApplyDiffsByOperation<TSchema[Key], TModifications[Key]>;
-} & IfThenElse<
-  IsNever<TRelations>,
-  object,
-  { selectWithRelations: () => void }
->;
+  [Key in keyof _TModifiedSchema]: _TModifiedSchema[Key]
+    & [TRelations] extends [never] ? object : { selectWithRelations: <TSelectedNestedRelations extends SelectNestedRelations<_TModifiedSchema, TRelations>>(nestedRelations: TSelectedNestedRelations) => };
+};
 
 type _FlattenModifiedSchema<
   T extends Record<string, Table>,
@@ -287,6 +320,26 @@ type MergeDiffToAll<
   };
 };
 
+type SimpleSchemaModifier = {
+  create: () => Record<string, SchemaGroup>;
+  modifyAll: (
+    factory: (base: SchemaGroup) => Partial<SchemaGroup>,
+  ) => SimpleSchemaModifier;
+  modifyApplicable: (
+    factory: (base: SchemaGroup) => Partial<SchemaGroup>,
+  ) => SimpleSchemaModifier;
+  modify: (
+    key: string,
+    factory: (base: SchemaGroup) => Partial<SchemaGroup>,
+  ) => SimpleSchemaModifier;
+  withRelations: (
+    relations: ExtractTablesWithRelationsParts<
+      AnyRelationsBuilderConfig,
+      Record<string, Table>
+    >,
+  ) => SimpleSchemaModifier;
+};
+
 type SchemaModifier<
   T extends Record<string, Table>,
   TSchema extends BaseSchema<T> = BaseSchema<T>,
@@ -295,7 +348,7 @@ type SchemaModifier<
     Record<Operations, EmptyDiff>
   >,
   TRelations extends
-    | Relations<ExtractTablesWithRelationsParts<AnyRelationsBuilderConfig, T>>
+    | ExtractTablesWithRelationsParts<AnyRelationsBuilderConfig, T>
     | never = never,
 > = {
   /**
@@ -306,6 +359,35 @@ type SchemaModifier<
     T,
     TSchema,
     TModifications,
+    TRelations
+  >;
+
+  /**
+   * Modify a specific entry in the schema
+   *
+   * @returns a new instance of {@link SchemaModifier} with the given modification
+   */
+  modify: <
+    Key extends keyof TSchema,
+    Base extends ApplyDiffsByOperation<
+      TSchema[Key] & Record<Operations, object>,
+      TModifications[Key]
+    >,
+    CModification extends Partial<Record<Operations, z.ZodObject>>,
+  >(
+    key: Key,
+    factory: (input: Base) => GuardModification<CModification, Base>,
+  ) => SchemaModifier<
+    T,
+    TSchema,
+    TModifications
+      & Record<
+        Key,
+        MergeDiffsByOperation<
+          TModifications[Key],
+          CreateDiffsByOperation<Base, CModification>
+        >
+      >,
     TRelations
   >;
 
@@ -347,35 +429,163 @@ type SchemaModifier<
     CModifications extends Partial<Record<Operations, z.ZodObject>>,
   >(
     factory: (input: Base) => GuardModification<CModifications, Base>,
-  ) => SchemaModifier<T, TSchema, TModifications, TRelations>;
-
-  /**
-   * Modify a specific entry in the schema
-   *
-   * @returns a new instance of {@link SchemaModifier} with the given modification
-   */
-  modify: <
-    Key extends keyof TSchema,
-    Base extends ApplyDiffsByOperation<TSchema[Key], TModifications[Key]>,
-    CModification extends Partial<Record<Operations, z.ZodObject>>,
-  >(
-    key: Key,
-    factory: (input: Base) => GuardModification<CModification, Base>,
   ) => SchemaModifier<
     T,
     TSchema,
-    TModifications
-      & Record<
-        Key,
-        MergeDiffsByOperation<
-          TModifications[Key],
-          CreateDiffsByOperation<Base, CModification>
-        >
-      >,
+    MergeDiffToAll<
+      TModifications,
+      CreateDiffsByOperation<Base, CModifications>
+    >,
     TRelations
   >;
+
+  withRelations: <
+    TNewRelation extends ExtractTablesWithRelationsParts<
+      AnyRelationsBuilderConfig,
+      T
+    >,
+  >(
+    relation: TNewRelation,
+  ) => SchemaModifier<T, TSchema, TModifications, TNewRelation>;
 };
 
-export declare function schemaModifier<T extends Record<string, Table>>(
+const createBaseSchemaGroup = (table: Table) => ({
+  insert: createInsertSchema(table),
+  select: createSelectSchema(table),
+  update: createUpdateSchema(table),
+});
+
+const selectWithRelations =
+  (
+    modifiedSchema: Record<string, SchemaGroup>,
+    relations: Record<string, Record<string, Relation<string>>>,
+    currentEntry: string,
+  ) =>
+  (selectedRelations: Record<string, unknown>) => {
+    if (!(currentEntry in modifiedSchema) || !modifiedSchema[currentEntry])
+      throw new Error("Invalid key");
+    let selectWithRelationSchema = modifiedSchema[currentEntry].select;
+    for (const key in selectedRelations) {
+      const cur = selectedRelations[key];
+      if (!cur) continue;
+      const currentRelation = relations[currentEntry]?.[key];
+      if (!currentRelation) throw new Error("Invalid relation");
+      if (!isTable(currentRelation.targetTable))
+        throw new Error("Relation target is not a table");
+      const target = getTableName(currentRelation.targetTable);
+      if (!modifiedSchema[target])
+        throw new Error("Relation target not found in source schema");
+
+      const innerSchema =
+        typeof selectedRelations[key] === "object" ?
+          selectWithRelations(
+            modifiedSchema,
+            relations,
+            target,
+          )(selectedRelations[key] as Record<string, unknown>)
+        : modifiedSchema[target].select;
+
+      const inner =
+        currentRelation.relationType === "one" ?
+          (<One<string>>currentRelation).optional ?
+            z.optional(innerSchema)
+          : innerSchema
+        : z.array(innerSchema);
+
+      selectWithRelationSchema = selectWithRelationSchema.extend({
+        [key]: inner,
+      });
+    }
+    return selectWithRelationSchema;
+  };
+
+const createModifiedSchema = (
+  schema: Record<string, Table>,
+  modifications: Record<string, ModificationPipe<SchemaGroup>>,
+  relations?: ExtractTablesWithRelationsParts<
+    AnyRelationsBuilderConfig,
+    Record<string, Table>
+  >,
+): Record<string, SchemaGroup> => {
+  const modifiedSchema = getEntries(schema)
+    .map(([key, value]) => {
+      const baseSchemaGroup = createBaseSchemaGroup(value);
+      return {
+        [getTableName(value)]: {
+          ...baseSchemaGroup,
+          ...modifications[key]?.(baseSchemaGroup),
+        },
+      };
+    })
+    .reduce((prev, cur) => ({ ...prev, ...cur }), {});
+  if (!relations) return modifiedSchema;
+
+  const modifiedSchemaWithRelations: Record<
+    string,
+    SchemaGroup & {
+      selectWithRelations?: (relations: Record<string, unknown>) => z._ZodType;
+    }
+  > = modifiedSchema;
+
+  const relationsByTableName: Record<
+    string,
+    Record<string, Relation<string>>
+  > = {};
+
+  for (const key in relations) {
+    const cur = relations[key];
+    if (!cur) continue;
+    const schemaEntry = modifiedSchemaWithRelations[getTableName(cur.table)];
+    if (!schemaEntry) continue;
+    relationsByTableName[getTableName(cur.table)] = cur.relations;
+    schemaEntry.selectWithRelations = selectWithRelations(
+      modifiedSchema,
+      relationsByTableName,
+      key,
+    );
+  }
+
+  return modifiedSchema;
+};
+
+const internalSchemaModifier = (
+  schema: Record<string, Table>,
+  modifications: Record<string, ModificationPipe<SchemaGroup>>,
+  relations?: ExtractTablesWithRelationsParts<
+    AnyRelationsBuilderConfig,
+    Record<string, Table>
+  >,
+): SimpleSchemaModifier => ({
+  create: () => createModifiedSchema(schema, modifications, relations),
+  modify: (key, factory) =>
+    internalSchemaModifier(
+      schema,
+      {
+        ...modifications,
+        key: optional(modifications[key]).orThrow().func(factory),
+      },
+      relations,
+    ),
+  modifyAll: (factory) =>
+    internalSchemaModifier(
+      schema,
+      getEntries(modifications)
+        .map(([key, value]) => ({ [key]: value.func(factory) }))
+        .reduce((prev, cur) => ({ ...prev, ...cur }), {}),
+      relations,
+    ),
+  modifyApplicable: (factory) =>
+    internalSchemaModifier(schema, modifications, relations),
+  withRelations: (newRelations) =>
+    internalSchemaModifier(schema, modifications, newRelations),
+});
+
+export const schemaModifier = <T extends Record<string, Table>>(
   schema: T,
-): SchemaModifier<T>;
+): SchemaModifier<T> =>
+  internalSchemaModifier(
+    schema,
+    getKeys(schema)
+      .map((key) => ({ [key]: modificationPipe<SchemaGroup>() }))
+      .reduce((prev, cur) => ({ ...prev, ...cur }), {}),
+  ) as unknown as SchemaModifier<T>;
