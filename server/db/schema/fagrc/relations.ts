@@ -44,6 +44,7 @@ export const fagrcRelations = defineRelationsPart(
 
     mod: {
       icon: r.one.icon({ from: r.mod.iconId, to: r.icon.id, optional: false }),
+      game: r.one.game({ from: r.mod.gameId, to: r.game.id, optional: false }),
     },
 
     processable: {

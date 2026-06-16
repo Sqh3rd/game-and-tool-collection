@@ -33,6 +33,17 @@ export type UnionToIntersection<A> =
   (A extends any ? (a: A) => void : never) extends (a: infer B) => void ? B
   : never;
 
+export type NeverIfEmpty<T extends object> =
+  [keyof T] extends [never] ? never : T;
+export type RequireAnyProperty<T> =
+  T extends object ?
+    [keyof T] extends [never] ?
+      T & "Object must not be empty"
+    : T
+  : T;
+export type RequireAnyPropertyRecursive<T> =
+  T extends object ? { [Key in keyof T]: RequireAnyPropertyRecursive<T[Key]> }
+  : T;
 export type Values<T extends object> = T[keyof T];
 export type Narrow<T, U> = IfThenElse<Extends<T, U>, T, U>;
 
@@ -155,3 +166,20 @@ export type MergeUnion<
 
 export type ExtractInnerObject<T> =
   T extends z.ZodObject<infer Inner> ? Inner : never;
+
+export type JoinPossibleZodSchemas<A, B> = ExtractInnerObject<A>
+  & ExtractInnerObject<B>;
+
+export type GetKeysWhereValue<T extends object, U> =
+  keyof T extends infer EKey ?
+    EKey extends keyof T ?
+      T[EKey] extends U ?
+        EKey
+      : never
+    : never
+  : never;
+
+export type ForceAccess<
+  T extends object,
+  Key extends string | number | symbol,
+> = T[Key & keyof T];

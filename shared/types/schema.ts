@@ -2,12 +2,7 @@ import { relations } from "@nuxthub/db/relations";
 import * as schema from "@nuxthub/db/schema";
 import { extractTablesFromSchema } from "drizzle-orm";
 import * as z from "zod";
-import {
-  createSchemaModifier,
-  type InferInnerSchema,
-  type InferModifiedSchema,
-} from "../utils/createSchemaModifier";
-import { schemaModifier } from "../utils/schemaModifier";
+import { schemaModifier } from "../utils/schemaModifier/schemaModifier";
 
 export const timestampMask = { createdAt: true, updatedAt: true } as const;
 
@@ -65,72 +60,7 @@ export const loginSchema = z.object({
 });
 export type Login = z.infer<typeof loginSchema>;
 
-export const dbSchemas = createSchemaModifier(extractTablesFromSchema(schema))
-  .modify("user", (base) => ({
-    insert: base.insert
-      .omit({ hashedPassword: true })
-      .safeExtend({
-        email: z.email(),
-        name: z
-          .string()
-          .trim()
-          .min(3, { error: "Must be at least 3 characters long" }),
-        password: passwordSchema,
-        confirmPassword: z.string().min(1, { error: "Field is required" }),
-      })
-      .refine((data) => data.password === data.confirmPassword, {
-        message: "Passwords do not match",
-        path: ["confirmPassword"],
-      }),
-    select: base.select
-      .omit({ hashedPassword: true, uuid: true })
-      .safeExtend({ email: z.email() }),
-    update: base.update.omit(timestampMask),
-  }))
-  .modify("fagrc_game", ({ insert, update }) => ({
-    insert: insert.omit(timestampMask),
-    update: update.omit(timestampMask),
-  }))
-  .modify("fagrc_icon", ({ insert, update }) => ({
-    insert: insert.omit(timestampMask),
-    update: update.omit(timestampMask),
-  }))
-  .modify("fagrc_mod", ({ insert, update }) => ({
-    insert: insert
-      .omit({ ...timestampMask, baseGame: true })
-      .safeExtend({ name: z.string(), link: z.string() }),
-    update: update.omit({ ...timestampMask, baseGame: true }),
-  }))
-  .modify("fagrc_processable", ({ insert, update }) => ({
-    insert: insert.omit(timestampMask),
-    update: update.omit(timestampMask),
-  }))
-  .modify("fagrc_processor", ({ insert, update }) => ({
-    insert: insert.omit(timestampMask),
-    update: update.omit(timestampMask),
-  }))
-  .modify("fagrc_recipe", ({ insert, update }) => ({
-    insert: insert.omit(timestampMask),
-    update: update.omit(timestampMask),
-  }))
-  .modify("fagrc_junction_processable_recipe", ({ insert, update }) => ({
-    insert: insert
-      .safeExtend({ type: z.enum(["IN", "OUT"]).optional() })
-      .omit(timestampMask),
-    update: update
-      .safeExtend({ type: z.enum(["IN", "OUT"]).optional() })
-      .omit(timestampMask),
-  }))
-  .withRelations(relations)
-  .create();
-
-export type DBSchema = InferModifiedSchema<typeof dbSchemas>;
-export type InsertSchema = InferInnerSchema<DBSchema, "insert">;
-export type DBTable = InferInnerSchema<DBSchema, "select">;
-export type UpdateSchema = InferInnerSchema<DBSchema, "update">;
-
-const test = schemaModifier(extractTablesFromSchema(schema))
-  .withRelations(relations)
+export const dbSchemas = schemaModifier(extractTablesFromSchema(schema))
   .modifyAll(({ insert, update }) => ({
     insert: insert.omit(timestampMask),
     update: update.omit(timestampMask),
@@ -154,17 +84,16 @@ const test = schemaModifier(extractTablesFromSchema(schema))
     select: base.select
       .omit({ hashedPassword: true, uuid: true })
       .safeExtend({ email: z.email() }),
+    update: base.update.omit(timestampMask),
   }))
   .modify("fagrc_mod", ({ insert, update }) => ({
     insert: insert
       .omit({ baseGame: true })
-      .safeExtend({ name: z.string(), link: z.string() }),
+      .required({ name: true, link: true }),
     update: update.omit({ baseGame: true }),
   }))
-  .modify("fagrc_junction_processable_recipe", ({ insert, update }) => ({
-    insert: insert.safeExtend({ type: z.enum(["IN", "OUT"]).optional() }),
-    update: update.safeExtend({ type: z.enum(["IN", "OUT"]).optional() }),
-  }))
+  .modifyUnited("fagrc_junction_processable_recipe", (base) =>
+    base.safeExtend({ type: z.enum(["IN", "OUT"]) }),
+  )
+  .withRelations(relations)
   .create();
-
-test.fagrc_game.
