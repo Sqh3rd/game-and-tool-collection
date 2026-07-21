@@ -65,8 +65,8 @@ export const dbSchemas = schemaModifier(extractTablesFromSchema(schema))
     insert: insert.omit(timestampMask),
     update: update.omit(timestampMask),
   }))
-  .modify("user", (base) => ({
-    insert: base.insert
+  .modify("user", ({ insert, select }) => ({
+    insert: insert
       .omit({ hashedPassword: true })
       .safeExtend({
         email: z.email(),
@@ -81,10 +81,9 @@ export const dbSchemas = schemaModifier(extractTablesFromSchema(schema))
         message: "Passwords do not match",
         path: ["confirmPassword"],
       }),
-    select: base.select
+    select: select
       .omit({ hashedPassword: true, uuid: true })
       .safeExtend({ email: z.email() }),
-    update: base.update.omit(timestampMask),
   }))
   .modify("fagrc_mod", ({ insert, update }) => ({
     insert: insert
@@ -97,3 +96,6 @@ export const dbSchemas = schemaModifier(extractTablesFromSchema(schema))
   )
   .withRelations(relations)
   .create();
+
+const game = dbSchemas.fagrc_game.selectWith({ icon: true });
+type T = z.infer<typeof game>;

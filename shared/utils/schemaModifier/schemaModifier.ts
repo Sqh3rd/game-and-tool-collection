@@ -582,7 +582,7 @@ const internalSchemaModifier = (
       schema,
       {
         ...modifications,
-        key: optional(modifications[key]).orThrow().func(factory),
+        [key]: optional(modifications[key]).orThrow().func(factory),
       },
       modificationsUnited,
       relations,
@@ -593,7 +593,7 @@ const internalSchemaModifier = (
       modifications,
       {
         ...modificationsUnited,
-        key: optional(modificationsUnited[key]).orThrow().func(factory),
+        [key]: optional(modificationsUnited[key]).orThrow().func(factory),
       },
       relations,
     ),
