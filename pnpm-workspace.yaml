@@ -1,12 +1,16 @@
+packages:
+  - "apps/*"
+  - "packages/*"
 allowBuilds:
   '@parcel/watcher': set this to true or false
-  esbuild: set this to true or false
-  unrs-resolver: set this to true or false
-
+  esbuild: true
+  nx: true
+  unrs-resolver: true
+autoInstallPeers: true
+minimumReleaseAgeExclude:
+  - "eslint-plugin-playwright@2.11.0"
+  - "globals@17.8.0"
 onlyBuiltDependencies:
-  - '@parcel/watcher'
-  - esbuild
-  - unrs-resolver
-
+  - "nx"
 overrides:
-  '@nuxthub/core': link:../../../Users/mpatterer/AppData/Local/pnpm/global/5/node_modules/@nuxthub/core
+  "@nuxthub/core": "link:../../../Users/mpatterer/AppData/Local/pnpm/global/5/node_modules/@nuxthub/core"

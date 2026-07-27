@@ -1,15 +1,35 @@
-// @ts-check
-import { globalIgnores } from "eslint/config";
-import eslintPluginTsdoc from "eslint-plugin-tsdoc";
-import withNuxt from "./.nuxt/eslint.config.mjs";
+import nx from "@nx/eslint-plugin";
+import { defineConfig } from "eslint/config";
+import tsEslint from "typescript-eslint";
 
-export default withNuxt([
-  globalIgnores(["./app/components/volt/**/*"]),
-  {
-    rules: {
-      "@typescript-eslint/no-namespace": "off",
-      "tsdoc/syntax": "error",
+export const rootConfig = [
+  { plugins: { "@nx": nx } },
+  ...defineConfig([
+    tsEslint.configs.strict,
+    {
+      ignores: [
+        "**/dist",
+        "**/out-tsc",
+        "**/vitest.config.*.timestamp*",
+        "**/test-output",
+      ],
     },
-    plugins: { tsdoc: eslintPluginTsdoc },
-  },
-]);
+    {
+      files: ["**/*.(ts|tsx|js|jsx|vue)"],
+      rules: {
+        "@nx/enforce-module-boundaries": [
+          "error",
+          {
+            enforceBuildableLibDependency: true,
+            allow: ["^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$"],
+            depConstraints: [
+              { sourceTag: "*", onlyDependOnLibsWithTags: ["*"] },
+            ],
+          },
+        ],
+      },
+    },
+  ]),
+];
+
+export default rootConfig;

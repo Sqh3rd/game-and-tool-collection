@@ -1,0 +1,30 @@
+import {
+  boolean,
+  index,
+  integer,
+  snakeCase,
+  unique,
+  varchar,
+} from "drizzle-orm/pg-core";
+import { game, icon } from ".";
+import { timestamps } from "../../helpers/timestamps";
+
+export const mod = snakeCase.table(
+  "fagrc_mod",
+  {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    name: varchar(),
+    description: varchar(),
+    link: varchar(),
+    gameId: integer()
+      .notNull()
+      .references(() => game.id),
+    iconId: integer().references(() => icon.id),
+    baseGame: boolean().notNull().default(false),
+    ...timestamps,
+  },
+  (t) => [
+    index("game_idx").on(t.gameId),
+    unique("unique_basegame").on(t.gameId, t.baseGame),
+  ],
+);

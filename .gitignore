@@ -4,7 +4,7 @@
 .nuxt
 .nitro
 .cache
-dist
+.nx
 
 # Node dependencies
 node_modules
@@ -23,3 +23,8 @@ logs
 .env
 .env.*
 !.env.example
+
+# Generated
+dist
+test-output
+
