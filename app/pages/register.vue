@@ -162,7 +162,6 @@ import Divider from "~/components/volt/Divider.vue";
 import InputText from "~/components/volt/InputText.vue";
 import Message from "~/components/volt/Message.vue";
 import Password from "~/components/volt/Password.vue";
-import { serverErrorSchema, User } from "~~/shared/types/db";
 
 const MASK_ICON_CLASSES =
   "pi pi-eye end-3 text-surface-500 dark:text-surface-400 absolute top-1/2 -mt-2 w-4 h-4";

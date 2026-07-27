@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { parseSimpleXML } from "../../../../shared/utils/parsing/parseXML";
-import type { XMLElement } from "../../../../shared/utils/parsing/xml";
+import { parseSimpleXML } from "../../../shared/utils/parseXML";
+import type { XMLElement } from "../../../shared/utils/xml";
 
 const XML_INPUT = {
   SIMPLE: {

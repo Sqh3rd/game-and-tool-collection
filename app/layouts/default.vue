@@ -127,7 +127,7 @@
 
 <script setup lang="ts">
 import { PrimeIcons } from "@primevue/core";
-import IconCustom from "~/components/icons/IconCustom.vue";
+import IconCustom from "~/components/global/icons/IconCustom.vue";
 import ButtonGroup from "~/components/volt/ButtonGroup.vue";
 import Menu from "~/components/volt/Menu.vue";
 import SecondaryButton from "~/components/volt/SecondaryButton.vue";

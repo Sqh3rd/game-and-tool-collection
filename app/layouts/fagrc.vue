@@ -1,53 +1,90 @@
 <template>
-  <div class="size-full">
-    <SideMenu :is-expanded="!!isExpanded">
-      <template #title>
-        <div class="flex flex-row items-center h-5">
-          <span
-            v-if="isExpanded"
-            class="text-lg font-semibold"
-            >Games</span
-          >
-          <div class="grow" />
-          <i
-            v-if="isExpanded"
-            class="pi pi-angle-double-left cursor-pointer"
-            @click.prevent="toggleExpanded()"
-          />
-          <i
-            v-else
-            class="pi pi-angle-double-right cursor-pointer"
-            @click.prevent="toggleExpanded()"
-          />
-        </div>
-      </template>
-      <template #content>
-        <SideMenuEntry
-          v-for="game of games"
-          :key="game.name"
-          :expanded="isExpanded"
-          :label="game.name"
-          @click.prevent="selectGame(game)"
-        />
-      </template>
-    </SideMenu>
+  <div class="size-full flex flex-row">
+    <SideMenuWithIconEntries
+      :is-expanded="isGamesExpanded"
+      :entries="gameEntries"
+      title="Games"
+      @select-entry="selectGame"
+      @toggle-expanded="toggleGamesExpanded"
+    />
+    <SideMenuWithIconEntries
+      v-if="isAnyGameSelected"
+      :is-expanded="isModsExpanded"
+      :entries="modEntries"
+      title="Mods"
+      @select-entry="selectMod"
+      @toggle-expanded="toggleModsExpanded"
+    />
     <slot />
   </div>
 </template>
 
 <script setup lang="ts">
-import SideMenu from "~/components/global/sideMenu/SideMenu.vue";
-import SideMenuEntry from "~/components/global/sideMenu/SideMenuEntry.vue";
-import type { Game } from "~~/shared/types/db";
+import SideMenuWithIconEntries, {
+  type SideMenuIconEntry,
+} from "~/components/global/sideMenu/SideMenuWithIconEntries.vue";
 
-const [isExpanded, toggleExpanded] = useToggle(true);
+const [isGamesExpanded, toggleGamesExpanded] = useToggle(true);
+const [isModsExpanded, toggleModsExpanded] = useToggle(true);
 
 const fagrcStore = useFagrcStore();
 
-const games = fagrcStore.games;
+const isAnyGameSelected = computed(() => fagrcStore.currentGame !== undefined);
 
-const selectGame = (game: Game.Select) => {
-  fagrcStore.setCurrentGame(game);
-  toggleExpanded();
+const gameEntries = computed(() =>
+  fagrcStore.games?.map(
+    (it): SideMenuIconEntry => ({
+      key: it.id,
+      isSelected: !!it.isSelected,
+      label: it.name,
+
+      icon: optional(it.icon.svg, undefined)
+        .filter((it) => !!it)
+        .map(parseSimpleSVG)
+        .get(),
+    }),
+  ),
+);
+const mappedMods = computed(() =>
+  fagrcStore.mods?.map(
+    (it): SideMenuIconEntry => ({
+      key: it.id,
+      isSelected: !!it.isSelected,
+      label: it.baseGame ? "Base Game" : it.name ?? "",
+
+      icon: optional(it.icon.svg, undefined)
+        .filter((it) => !!it)
+        .map(parseSimpleSVG)
+        .get(),
+    }),
+  ),
+);
+
+const noModsEntry: SideMenuIconEntry = {
+  key: -2,
+  isSelected: false,
+  disabled: true,
+  label: "No mods found",
+  icon: "pi-times",
+};
+const modEntries = computed(() =>
+  mappedMods.value?.length ? mappedMods.value : [noModsEntry],
+);
+
+const selectGame = (entry: SideMenuIconEntry) => {
+  const game = fagrcStore.games?.find((it) => it.id === entry.key);
+  assertNotNull(game);
+  const isDifferentGame = fagrcStore.setCurrentGame(game);
+  toggleGamesExpanded(false);
+  if (!isDifferentGame) return;
+
+  toggleModsExpanded(isDifferentGame);
+  fagrcStore.loadMods();
+};
+
+const selectMod = (entry: SideMenuIconEntry) => {
+  const mod = fagrcStore.mods?.find((it) => it.id === entry.key);
+  if (mod) fagrcStore.toggleModSelected(mod);
+  else fagrcStore.toggleUseBaseGame();
 };
 </script>

@@ -77,7 +77,7 @@
   --p-surface-950: #09090b;
 }
 
-:root {
+@theme {
   --p-primary-color: light-dark(var(--p-primary-500), var(--p-primary-400));
   --p-primary-contrast-color: light-dark(
     var(--p-surface-0),
@@ -102,7 +102,7 @@
   --p-content-hover-color: light-dark(var(--p-surface-800), var(--p-surface-0));
   --p-highlight-background: light-dark(
     var(--p-primary-50),
-    color-mix(in srgb, var(--p-primary-400), transparent 84%)
+    var(--p-primary-800)
   );
   --p-highlight-color: light-dark(
     var(--p-primary-700),
@@ -110,7 +110,7 @@
   );
   --p-highlight-focus-background: light-dark(
     var(--p-primary-100),
-    color-mix(in srgb, var(--p-primary-400), transparent 76%)
+    var(--p-primary-700)
   );
   --p-highlight-focus-color: light-dark(
     var(--p-primary-800),

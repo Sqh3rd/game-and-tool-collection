@@ -10,7 +10,11 @@ export default defineNuxtConfig({
   nitro: { experimental: { tasks: true } },
   vite: { plugins: [tailwindcss()] },
   hub: {
-    db: { dialect: "postgresql", casing: "snake_case", useRelationsV2: true },
+    db: {
+      dialect: "postgresql",
+      casing: "snake_case",
+      useRelationsV2: true,
+    },
   },
 
   modules: [

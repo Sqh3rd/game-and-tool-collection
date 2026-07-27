@@ -1,7 +1,7 @@
 <template>
   <component
     :is="src.tag"
-    :attributes="src.attributes"
+    v-bind="src.attributes"
   >
     <!-- eslint-disable-next-line vue/valid-v-for -->
     <IconExternal
@@ -14,5 +14,3 @@
 <script lang="ts" setup>
 const { src } = defineProps<{ src: SimpleSVGElement }>();
 </script>
-
-<style></style>

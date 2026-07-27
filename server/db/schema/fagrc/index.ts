@@ -10,8 +10,8 @@ export * from "./recipe";
 
 export * from "./processor";
 
-export * from "./junction_processable_recipe";
-export * from "./junction_processor_recipe";
+export * from "./junctionProcessableRecipe";
+export * from "./junctionProcessorRecipe";
 
 export * from "./relations";
 

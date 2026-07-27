@@ -1,0 +1,10 @@
+{
+  "name": "game-collection",
+  "image": "ubuntu:latest",
+  "forwardPorts": [
+    3000
+  ],
+  "features": {
+    "ghcr.io/eitsupi/devcontainer-features/nushell:0": {}
+  }
+}

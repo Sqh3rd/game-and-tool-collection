@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts" setup>
-import IconCustom from "../icons/IconCustom.vue";
+import IconCustom from "./icons/IconCustom.vue";
 </script>
 
 <style lang="css">

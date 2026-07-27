@@ -1,8 +1,3 @@
-import type {
-  PgInsertValue,
-  PgTableWithColumns,
-  TableConfig,
-} from "drizzle-orm/pg-core";
 import {
   game,
   icon,
@@ -11,20 +6,14 @@ import {
   processable,
   processor,
   recipe,
-} from "hub:db:schema";
+} from "@nuxthub/db/schema";
+import type {
+  PgInsertValue,
+  PgTableWithColumns,
+  TableConfig,
+} from "drizzle-orm/pg-core";
 import { junctionProcessableRecipe } from "~~/server/db/schema/fagrc";
-import type {
-  JunctionProcessableRecipe,
-  JunctionProcessorRecipe,
-} from "~~/server/utils/types";
-import type {
-  Game,
-  Icon,
-  Mod,
-  Processable,
-  Processor,
-  Recipe,
-} from "~~/shared/types/db";
+import type { InsertSchema } from "~~/shared/types/schema";
 
 const insert = <T extends TableConfig>(it: {
   table: PgTableWithColumns<T>;
@@ -78,7 +67,7 @@ export default defineTask({
   },
 });
 
-const initialIcons: Icon.Insert[] = [
+const initialIcons: InsertSchema["fagrc_icon"][] = [
   // Placeholder
   { name: "Placeholder Icon", svg: "" },
 
@@ -89,7 +78,7 @@ const initialIcons: Icon.Insert[] = [
   },
 ];
 
-const initialGames: Game.Insert[] = [
+const initialGames: InsertSchema["fagrc_game"][] = [
   {
     name: "Factorio",
     description: "You know what it is",
@@ -117,72 +106,80 @@ const initialGames: Game.Insert[] = [
   },
 ];
 
-const initialMods: Mod.Insert[] = [
+const initialMods: InsertSchema["fagrc_mod"][] = [
+  ({
+    gameId: 1,
+    baseGame: true,
+    iconId: 2,
+  } as unknown as InsertSchema["fagrc_mod"]),
   {
     gameId: 1,
     name: "Space Age",
     link: "http://factorio.com/space-age/overview",
     description: "Official Factorio DLC",
+    iconId: 1,
   },
 ];
 
-const initialProcessables: Processable.Insert[] = [
-  { name: "Stone furnace", description: "Basic furnace", gameId: 1, iconId: 1 },
+const initialProcessables: InsertSchema["fagrc_processable"][] = [
+  { name: "Stone furnace", description: "Basic furnace", modId: 1, iconId: 1 },
   {
     name: "Iron Ore",
     description: "One of the most basic resources",
-    gameId: 1,
+    modId: 1,
     iconId: 1,
   },
   {
     name: "Copper Ore",
     description: "One of the most basic resources",
-    gameId: 1,
+    modId: 1,
     iconId: 1,
   },
   {
     name: "Iron plate",
     description: "One of the most basic resources",
-    gameId: 1,
+    modId: 1,
     iconId: 1,
   },
   {
     name: "Stone",
     description: "One of the most basic resources",
-    gameId: 1,
+    modId: 1,
     iconId: 1,
   },
   {
     name: "Coal",
     description: "Basic fuel",
-    gameId: 1,
+    modId: 1,
     energyValue: 4e6,
     iconId: 1,
   },
 ];
 
-const initialRecipes: Recipe.Insert[] = [{ duration: 0.5 }];
+const initialRecipes: InsertSchema["fagrc_recipe"][] = [
+  { duration: 0.5 },
+];
 
-const initialProcessors: Processor.Insert[] = [
+const initialProcessors: InsertSchema["fagrc_processor"][] = [
   { processableId: 1, energyConsumption: 90e3, craftingSpeed: 1 },
 ];
 
-const initialJunctionProcessorRecipe: JunctionProcessorRecipe.Insert[] = [
-  { processorId: 1, recipeId: 1 },
-];
-const initialJunctionProcessableRecipe: JunctionProcessableRecipe.Insert[] = [
-  {
-    processableId: 1,
-    recipeId: 1,
-    quantity: 1,
-    measurement: "pcs",
-    type: "OUT",
-  },
-  {
-    processableId: 5,
-    recipeId: 1,
-    quantity: 5,
-    measurement: "pcs",
-    type: "IN",
-  },
-];
+const initialJunctionProcessorRecipe: InsertSchema["fagrc_junction_processor_recipe"][] =
+  [{ processorId: 1, recipeId: 1 }];
+const initialJunctionProcessableRecipe: InsertSchema["fagrc_junction_processable_recipe"][] =
+  [
+    {
+      processableId: 1,
+      recipeId: 1,
+      quantity: 1,
+      measurement: "pcs",
+      type: "OUT",
+    },
+    {
+      processableId: 5,
+      recipeId: 1,
+      quantity: 5,
+      measurement: "pcs",
+      type: "IN",
+    },
+  ];
