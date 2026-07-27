@@ -14,14 +14,7 @@ export default defineNuxtConfig({
       dialect: "postgresql",
       casing: "snake_case",
       useRelationsV2: true,
-      connection: { connectionString: "" },
     },
-  },
-  storybook: {
-    enabled: false,
-    route: "/__storybook__",
-    host: "http://localhost",
-    port: 3001,
   },
 
   modules: [
@@ -31,6 +24,5 @@ export default defineNuxtConfig({
     "@vueuse/nuxt",
     "@nuxt/eslint",
     "@nuxt/test-utils/module",
-    "@nuxtjs/storybook",
   ],
 });

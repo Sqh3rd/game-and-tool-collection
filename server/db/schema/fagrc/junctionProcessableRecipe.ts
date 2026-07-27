@@ -1,4 +1,10 @@
-import { integer, pgEnum, pgTable, primaryKey, varchar } from "drizzle-orm/pg-core";
+import {
+  integer,
+  pgEnum,
+  pgTable,
+  primaryKey,
+  varchar,
+} from "drizzle-orm/pg-core";
 import { recipe } from ".";
 import { timestamps } from "../../helpers/timestamps";
 import { processable } from "./processable";
@@ -19,7 +25,7 @@ export const junctionProcessableRecipe = pgTable(
       .references(() => processable.id),
     quantity: integer().notNull(),
     measurement: varchar().notNull(),
-    type: junctionProcessableRecipeType(),
+    type: junctionProcessableRecipeType().notNull(),
     ...timestamps,
   },
   (t) => [primaryKey({ columns: [t.recipeId, t.processableId] })],
