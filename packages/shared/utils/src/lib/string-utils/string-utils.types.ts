@@ -1,4 +1,4 @@
-import type { Extends, IfThenElse } from "./helperTypes";
+import type { Extends, IfThenElse } from "../helper.types";
 
 type UpperCaseLetter =
   | "A"

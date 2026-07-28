@@ -1,4 +1,4 @@
-import { identity } from "./helperFunctions";
+import { identity } from "./helper-functions";
 
 export interface Pipe<In, Out> {
   (arg: In): Out;

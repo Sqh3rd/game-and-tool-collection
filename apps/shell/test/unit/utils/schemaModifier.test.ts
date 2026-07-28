@@ -8,7 +8,7 @@ import {
 import { describe, expect, test } from "vitest";
 import * as z from "zod";
 import { getKeys } from "../../../shared/utils/objectUtils";
-import { schemaModifier } from "../../../shared/utils/schemaModifier/schemaModifier";
+import { schemaModifier } from "../../../../../packages/schemaModifier/src/lib/schema-modifier";
 
 describe("createZodSchemasFromDBSchema", () => {
   const user = snakeCase.table("user", {

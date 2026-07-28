@@ -1,3 +1,4 @@
+import { StandardSchemaV1 } from "@standard-schema/spec";
 export type IfThenElse<If extends boolean, Then, Else> =
   If extends true ? Then : Else;
 
@@ -28,6 +29,7 @@ export type Includes<A, B> = AnyOverlap<A, B> extends false ? false : true;
 export type UnionIsEmpty<A> = [A] extends [never] ? true : false;
 export type UnionHasEntries<A> = Not<UnionIsEmpty<A>>;
 export type UnionToIntersection<A> =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (A extends any ? (a: A) => void : never) extends (a: infer B) => void ? B
   : never;
 
@@ -162,11 +164,14 @@ export type MergeUnion<
   MergeUnionLenient<T>
 >;
 
-export type ExtractInnerObject<T> =
-  T extends z.ZodObject<infer Inner> ? Inner : never;
+export type InferOutput<Schema extends StandardSchemaV1> = NonNullable<
+  Schema["~standard"]["types"]
+>["output"];
 
-export type JoinPossibleZodSchemas<A, B> = ExtractInnerObject<A>
-  & ExtractInnerObject<B>;
+export type JoinPossibleSchemas<
+  A extends StandardSchemaV1,
+  B extends StandardSchemaV1,
+> = InferOutput<A> & InferOutput<B>;
 
 export type GetKeysWhereValue<T extends object, U> =
   keyof T extends infer EKey ?
