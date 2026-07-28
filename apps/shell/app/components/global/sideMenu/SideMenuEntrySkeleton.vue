@@ -1,10 +1,19 @@
 <template>
-  <SideMenuEntry :expanded="expanded" disabled>
+  <SideMenuEntry
+    :expanded="expanded"
+    disabled
+  >
     <template #icon>
-      <Skeleton height="100%" width="100%" />
+      <Skeleton
+        height="100%"
+        width="100%"
+      />
     </template>
     <div class="h-8 grow">
-      <Skeleton height="100%" width="100%" />
+      <Skeleton
+        height="100%"
+        width="100%"
+      />
     </div>
   </SideMenuEntry>
 </template>

@@ -32,32 +32,28 @@ const fagrcStore = useFagrcStore();
 const isAnyGameSelected = computed(() => fagrcStore.currentGame !== undefined);
 
 const gameEntries = computed(() =>
-  fagrcStore.games?.map(
-    (it): SideMenuIconEntry => ({
-      key: it.id,
-      isSelected: !!it.isSelected,
-      label: it.name,
+  fagrcStore.games?.map((it): SideMenuIconEntry => ({
+    key: it.id,
+    isSelected: !!it.isSelected,
+    label: it.name,
 
-      icon: optional(it.icon.svg, undefined)
-        .filter((it) => !!it)
-        .map(parseSimpleSVG)
-        .get(),
-    }),
-  ),
+    icon: optional(it.icon.svg, undefined)
+      .filter((it) => !!it)
+      .map(parseSimpleSVG)
+      .get(),
+  })),
 );
 const mappedMods = computed(() =>
-  fagrcStore.mods?.map(
-    (it): SideMenuIconEntry => ({
-      key: it.id,
-      isSelected: !!it.isSelected,
-      label: it.baseGame ? "Base Game" : it.name ?? "",
+  fagrcStore.mods?.map((it): SideMenuIconEntry => ({
+    key: it.id,
+    isSelected: !!it.isSelected,
+    label: it.baseGame ? "Base Game" : (it.name ?? ""),
 
-      icon: optional(it.icon.svg, undefined)
-        .filter((it) => !!it)
-        .map(parseSimpleSVG)
-        .get(),
-    }),
-  ),
+    icon: optional(it.icon.svg, undefined)
+      .filter((it) => !!it)
+      .map(parseSimpleSVG)
+      .get(),
+  })),
 );
 
 const noModsEntry: SideMenuIconEntry = {

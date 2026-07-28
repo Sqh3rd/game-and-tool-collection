@@ -115,9 +115,9 @@ const parseTag = (
   content: string,
   startIndex: number,
 ): SimpleXMLElement & ParsedChars => {
-  if (
-    !(content.at(startIndex) === "<" && content.at(startIndex + 1)?.match(/\w/))
-  ) {
+  if (!(
+    content.at(startIndex) === "<" && content.at(startIndex + 1)?.match(/\w/)
+  )) {
     throw new Error(
       `Expected tag to start with "^<\\w" but found "${content.substring(0, 2)}" instead`,
     );

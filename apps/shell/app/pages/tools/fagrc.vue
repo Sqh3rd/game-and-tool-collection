@@ -1,5 +1,5 @@
 <template>
-    <NuxtLayout name="fagrc" />
+  <NuxtLayout name="fagrc" />
 </template>
 
 <script setup lang="ts">

@@ -58,9 +58,11 @@ export type MergeDiffs<TDBefore extends Diff, TDAfter extends Diff> =
         | Exclude<TDBefore["removed"], keyof TDAfter["added"]>
         | TDAfter["removed"];
       changed: {
-        [Key in
-          | Exclude<keyof TDBefore["changed"], TDAfter["removed"]>
-          | keyof TDAfter["changed"]]: {
+        [
+          Key in
+            | Exclude<keyof TDBefore["changed"], TDAfter["removed"]>
+            | keyof TDAfter["changed"]
+        ]: {
           before: Key extends keyof TDBefore["changed"] ?
             TDBefore["changed"][Key]["before"]
           : TDAfter["changed"][Key]["before"];

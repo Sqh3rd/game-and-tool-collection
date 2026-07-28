@@ -1,7 +1,5 @@
 <template>
-  <SideMenuEntry>
-
-  </SideMenuEntry>
+  <SideMenuEntry> </SideMenuEntry>
 </template>
 
 <script lang="ts" setup>

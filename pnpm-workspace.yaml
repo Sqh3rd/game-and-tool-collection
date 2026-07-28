@@ -13,4 +13,4 @@ minimumReleaseAgeExclude:
 onlyBuiltDependencies:
   - "nx"
 overrides:
-  "@nuxthub/core": "link:../../../Users/mpatterer/AppData/Local/pnpm/global/5/node_modules/@nuxthub/core"
+  "@nuxthub/core": "link:../nuxthub-core"

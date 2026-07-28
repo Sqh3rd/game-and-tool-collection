@@ -1,2 +1,4 @@
-app/components/volt/**
-server/db/migrations/**
+**/app/components/volt/**
+**/server/db/migrations/**
+**/coverage/**
+**/test-output/**
