@@ -1,4 +1,4 @@
-import { getCase, splitByCase } from "./string-utils";
+import { convertCase, getCase, splitByCase } from "./string-utils";
 import { Case } from "./string-utils.types";
 
 describe("Get Case", () => {
@@ -46,5 +46,37 @@ describe("Split By Case", () => {
     ["-", []],
   ])('Split "%s" into [%s]', ([input, expected]) => {
     expect(splitByCase(input)).to.deep.eq(expected);
+  });
+});
+
+describe("Convert Case", () => {
+  test.for(<[string, Case, string][]>[
+    ["to_be_snake_case", "snake_case", "to_be_snake_case"],
+    ["to_be_kebap_case", "kebap-case", "to-be-kebap-case"],
+    ["to_be_camel_case", "camelCase", "toBeCamelCase"],
+    ["to_be_pascal_case", "PascalCase", "ToBePascalCase"],
+
+    ["to-be-snake-case", "snake_case", "to_be_snake_case"],
+    ["to-be-kebap-case", "kebap-case", "to-be-kebap-case"],
+    ["to-be-camel-case", "camelCase", "toBeCamelCase"],
+    ["to-be-pascal-case", "PascalCase", "ToBePascalCase"],
+
+    ["toBeSnakeCase", "snake_case", "to_be_snake_case"],
+    ["toBeKebapCase", "kebap-case", "to-be-kebap-case"],
+    ["toBeCamelCase", "camelCase", "toBeCamelCase"],
+    ["toBePascalCase", "PascalCase", "ToBePascalCase"],
+
+    ["ToBeSnakeCase", "snake_case", "to_be_snake_case"],
+    ["ToBeKebapCase", "kebap-case", "to-be-kebap-case"],
+    ["ToBeCamelCase", "camelCase", "toBeCamelCase"],
+    ["ToBePascalCase", "PascalCase", "ToBePascalCase"],
+
+    ["to_be_snake_", "snake_case", "to_be_snake"],
+    ["_", "kebap-case", ""],
+    ["to_be_kebap_", "snake_case", "to_be_kebap"],
+    ["A", "PascalCase", "A"],
+    ["A", "kebap-case", "a"],
+  ])('Convert "%s" to "%s" returns "%s"', ([input, target, expected]) => {
+    expect(convertCase(input, target)).to.eq(expected);
   });
 });

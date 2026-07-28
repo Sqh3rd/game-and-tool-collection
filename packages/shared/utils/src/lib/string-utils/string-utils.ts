@@ -35,10 +35,15 @@ export const splitByCase = <S extends string>(s: S): SplitByCase<S> => {
 };
 
 const splitByCapital = (s: string) => {
-  const result = s.split(/[A-Z]/g);
-  const matches = s.match(/[A-Z]/g);
-  if (!matches) return [];
-  return result.slice(1).map((it, idx) => `${matches[idx]}${it}`);
+  const result: string[] = [];
+  let lastIndex = 0;
+  for (let i = 0; i < s.length; i++) {
+    if (!s.charAt(i).match(/[A-Z]/)) continue;
+    result.push(s.slice(lastIndex, i));
+    lastIndex = i;
+  }
+  result.push(s.slice(lastIndex));
+  return result;
 };
 
 export const capitalize = <S extends string>(s: S): Capitalize<S> =>
@@ -51,8 +56,6 @@ export const convertCase = <S extends string, Target extends Case>(
   s: S,
   target: Target,
 ): ConvertCase<S, Target> => {
-  const currentCase = getCase(s);
-  if (<Case>currentCase === target) return s as ConvertCase<S, Target>;
   const split = splitByCase(s);
   switch (target) {
     case "PascalCase":
