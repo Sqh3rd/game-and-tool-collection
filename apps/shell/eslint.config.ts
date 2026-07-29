@@ -1,4 +1,4 @@
 import withNuxt from "./.nuxt/app.config.mjs";
-import { rootConfig } from "../../eslint.config";
+import baseConfig from "../../eslint.base.config";
 
-export default withNuxt(...rootConfig);
+export default withNuxt(...baseConfig);

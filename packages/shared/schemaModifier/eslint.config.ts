@@ -1,6 +1,7 @@
-import baseConfig from "../../../eslint.config.ts";
+import { defineConfig } from "eslint/config";
+import baseConfig from "../../../eslint.base.config";
 
-export default [
+export default defineConfig([
   ...baseConfig,
   {
     files: ["**/*.json"],
@@ -13,5 +14,4 @@ export default [
       ],
     },
     languageOptions: { parser: await import("jsonc-eslint-parser") },
-  },
-];
+  }]);

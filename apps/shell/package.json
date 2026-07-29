@@ -1,5 +1,9 @@
 {
   "name": "@game-and-tool-collection/shell",
   "version": "0.0.1",
-  "private": true
+  "private": true,
+  "scripts": {
+    "nuxt-prepare": "nuxt prepare",
+    "nuxt-cleanup": "nuxt cleanup"
+  }
 }
