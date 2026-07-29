@@ -2,4 +2,5 @@
 **/server/db/migrations/**
 **/coverage/**
 **/test-output/**
+**/.nuxt
 pnpm-lock.yaml
