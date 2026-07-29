@@ -1,6 +1,0 @@
-{
-  "experimentalTernaries": true,
-  "experimentalOperatorPosition": "start",
-  "objectWrap": "collapse",
-  "singleAttributePerLine": true
-}
