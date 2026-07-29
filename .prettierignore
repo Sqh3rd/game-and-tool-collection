@@ -2,3 +2,4 @@
 **/server/db/migrations/**
 **/coverage/**
 **/test-output/**
+pnpm-lock.yaml

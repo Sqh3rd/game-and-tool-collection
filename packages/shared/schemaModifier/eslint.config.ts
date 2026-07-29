@@ -14,4 +14,5 @@ export default defineConfig([
       ],
     },
     languageOptions: { parser: await import("jsonc-eslint-parser") },
-  }]);
+  },
+]);

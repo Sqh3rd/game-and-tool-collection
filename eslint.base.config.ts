@@ -3,14 +3,14 @@ import { defineConfig } from "eslint/config";
 import tsEslint from "typescript-eslint";
 
 export default defineConfig([
-  nx.configs["flat/base"], {
-    ignores: [
-      "**/dist",
-      "**/out-tsc",
-      "**/test-output",
-    ],
+  nx.configs["flat/base"],
+  {
+    ignores: ["**/dist", "**/out-tsc", "**/test-output"],
     files: ["**/*.ts", "**/*.vue"],
-    extends: [tsEslint.configs.strictTypeChecked, nx.configs["flat/typescript"]],
+    extends: [
+      tsEslint.configs.strictTypeChecked,
+      nx.configs["flat/typescript"],
+    ],
     languageOptions: { parserOptions: { projectService: true } },
     rules: {
       "@nx/enforce-module-boundaries": [
@@ -37,4 +37,5 @@ export default defineConfig([
         },
       ],
     },
-  }]);
+  },
+]);

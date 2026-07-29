@@ -8,9 +8,11 @@ export default defineConfig([
     rules: {
       "@nx/dependency-checks": [
         "error",
-        { ignoredFiles: ["{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}"] },
+        {
+          ignoredFiles: ["{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}"],
+        },
       ],
     },
     languageOptions: { parser: await import("jsonc-eslint-parser") },
-  }]
-);
+  },
+]);
