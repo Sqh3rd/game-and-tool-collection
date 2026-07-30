@@ -21,7 +21,7 @@ type _Optional<T, NullOption extends undefined | null = null> = {
       TKey extends GetKeysWhereValue<T, (...args: any[]) => any>,
       TArgs extends (T[TKey] extends (...args: infer IArgs) => any ? IArgs
       : never),
-      R extends (T[TKey] extends (...args: any[]) => infer IReturn ? IReturn
+      R extends (T[TKey] extends (...args: TArgs[]) => infer IReturn ? IReturn
       : never),
     >(
       toCall: TKey,

@@ -1,4 +1,4 @@
-import { StandardSchemaV1 } from "@standard-schema/spec";
+import { StandardSchemaV1, StandardTypedV1 } from "@standard-schema/spec";
 export type IfThenElse<If extends boolean, Then, Else> =
   If extends true ? Then : Else;
 
@@ -164,14 +164,12 @@ export type MergeUnion<
   MergeUnionLenient<T>
 >;
 
-export type InferOutput<Schema extends StandardSchemaV1> = NonNullable<
-  Schema["~standard"]["types"]
->["output"];
-
-export type JoinPossibleSchemas<
+export type MergeSchemas<
   A extends StandardSchemaV1,
   B extends StandardSchemaV1,
-> = InferOutput<A> & InferOutput<B>;
+> = StandardSchemaV1<
+  StandardTypedV1.InferOutput<A> & StandardTypedV1.InferOutput<B>
+>;
 
 export type GetKeysWhereValue<T extends object, U> =
   keyof T extends infer EKey ?

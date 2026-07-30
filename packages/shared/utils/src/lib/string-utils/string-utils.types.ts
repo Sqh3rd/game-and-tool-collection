@@ -27,7 +27,6 @@ type UpperCaseLetter =
   | "X"
   | "Y"
   | "Z";
-type LowerCaseLetter = Lowercase<UpperCaseLetter>;
 export type Case = "camelCase" | "PascalCase" | "kebap-case" | "snake_case";
 export type GetCase<S extends string> =
   S extends `${infer _}_${infer _}` ? "snake_case" & Case
@@ -40,18 +39,14 @@ type SplitByCamelOrPascalCase<
   CurrentSegment extends string = "",
 > =
   S extends "" ? [Lowercase<CurrentSegment>]
-  : S extends (
-    `${infer A extends UpperCaseLetter}${infer B extends LowerCaseLetter}${infer Rest}`
-  ) ?
+  : S extends `${infer A extends UpperCaseLetter}${infer Rest}` ?
     IfThenElse<
       Extends<CurrentSegment, "">,
-      SplitByCamelOrPascalCase<`${B}${Rest}`, A>,
-      [Lowercase<CurrentSegment>, ...SplitByCamelOrPascalCase<`${B}${Rest}`, A>]
+      SplitByCamelOrPascalCase<`${Rest}`, A>,
+      [Lowercase<CurrentSegment>, ...SplitByCamelOrPascalCase<`${Rest}`, A>]
     >
-  : S extends (
-    `${infer A extends LowerCaseLetter}${infer B extends UpperCaseLetter}`
-  ) ?
-    [Lowercase<`${CurrentSegment}${A}`>, Lowercase<B>]
+  : S extends `${infer A extends UpperCaseLetter}` ?
+    [Lowercase<CurrentSegment>, Lowercase<A>]
   : S extends `${infer A}${infer Rest}` ?
     SplitByCamelOrPascalCase<Rest, `${CurrentSegment}${A}`>
   : [];
@@ -65,11 +60,27 @@ type SplitBySnakeCase<S extends string> =
   S extends `${infer A}_${infer B}` ? [Lowercase<A>, ...SplitBySnakeCase<B>]
   : [Lowercase<S>];
 
-export type SplitByCase<S extends string, Source extends Case = GetCase<S>> =
+type RemoveEmptyStrings<T extends string[]> =
+  T extends [infer A extends string, ...infer Rest extends string[]] ?
+    A extends "" ?
+      RemoveEmptyStrings<Rest>
+    : [A, ...RemoveEmptyStrings<Rest>]
+  : T extends [infer A extends string] ?
+    A extends "" ?
+      []
+    : [A]
+  : [];
+
+type InternalSplitByCase<S extends string, Source extends Case = GetCase<S>> =
   Source extends "camelCase" | "PascalCase" ? SplitByCamelOrPascalCase<S>
   : Source extends "kebap-case" ? SplitByKebapCase<S>
   : Source extends "snake_case" ? SplitBySnakeCase<S>
   : [];
+
+export type SplitByCase<
+  S extends string,
+  Source extends Case = GetCase<S>,
+> = RemoveEmptyStrings<InternalSplitByCase<S, Source>>;
 
 type TupleToCamelCase<S extends string[]> =
   `${S[0]}${TupleToPascalCase<S, [0]>}`;
