@@ -208,10 +208,23 @@ importers:
         specifier: ^3.3.8
         version: 3.3.8(typescript@6.0.3)
 
-  apps/shell: {}
+  apps/shell:
+    dependencies:
+      '@gatc/schemaModifier':
+        specifier: workspace:*
+        version: link:../../packages/shared/schemaModifier
+      '@gatc/utils':
+        specifier: workspace:*
+        version: link:../../packages/shared/utils
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
 
   packages/shared/schemaModifier:
     dependencies:
+      '@gatc/utils':
+        specifier: workspace:*
+        version: link:../utils
       tslib:
         specifier: ^2.3.0
         version: 2.8.1

@@ -3,8 +3,6 @@
   "compileOnSave": false,
   "files": [],
   "references": [
-    { "path": "./apps/shell-e2e" },
-    { "path": "./apps/shell" },
     { "path": "./packages/shared/schemaModifier" },
     { "path": "./packages/shared/utils" }
   ]
