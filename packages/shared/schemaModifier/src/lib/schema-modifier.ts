@@ -17,16 +17,24 @@ import {
   type BuildSchema,
   type CoerceOptions,
 } from "drizzle-orm/zod";
-import z from "zod";
 import type {
+  Equals,
   ForceAccess,
-  ExtractInnerObject,
+  Guard,
+  InferOutput,
   IsNever,
   MergeBehaviour,
   MergeUnion,
   UnionIsEmpty,
-} from "../helpers.types";
-import { modificationPipe, type ModificationPipe } from "../pipe";
+  Values,
+} from "@gatc/utils";
+import {
+  getEntries,
+  getKeys,
+  modificationPipe,
+  optional,
+  type ModificationPipe,
+} from "@gatc/utils";
 import type {
   Diff,
   CreateDiff,
@@ -34,13 +42,14 @@ import type {
   ApplyDiff,
   MergeDiffs,
 } from "./diff.types";
+import { StandardSchemaV1 } from "@standard-schema/spec";
 
 type Operations = "insert" | "select" | "update";
 
 type SchemaGroup<
-  Insert extends z.ZodObject = z.ZodObject,
-  Select extends z.ZodObject = z.ZodObject,
-  Update extends z.ZodObject = z.ZodObject,
+  Insert extends StandardSchemaV1 = StandardSchemaV1,
+  Select extends StandardSchemaV1 = StandardSchemaV1,
+  Update extends StandardSchemaV1 = StandardSchemaV1,
 > = { insert: Insert; select: Select; update: Update };
 
 type SchemaGroupFromTable<TTable extends Table> = SchemaGroup<
@@ -137,8 +146,8 @@ type SelectNestedRelationsToSchema<
     Relations,
     keyof Relations
   >,
-> = z.ZodObject<
-  ExtractInnerObject<TModifiedSchema[TCurrentEntry]["select"]>
+> = StandardSchemaV1<
+  InferOutput<TModifiedSchema[TCurrentEntry]["select"]>
     & (TSelectedNestedRelations extends true ? object
     : IsNever<keyof TSelectedNestedRelations> extends true ? object
     : {
@@ -152,10 +161,10 @@ type SelectNestedRelationsToSchema<
               TRelations,
               ETargetTable,
               TSelectedNestedRelations[Key]
-            > extends infer EInner extends z._ZodType ?
+            > extends infer EInner extends StandardSchemaV1 ?
               ECurrentRelation extends One<ETargetTable, infer EOptional> ?
-                IfThenElse<EOptional, z.ZodOptional<EInner>, EInner>
-              : ECurrentRelation extends Many<ETargetTable> ? z.ZodArray<EInner>
+                IfThenElse<EOptional, EInner | undefined, EInner>
+              : ECurrentRelation extends Many<ETargetTable> ? EInner[]
               : never
             : never
           : never
@@ -167,9 +176,10 @@ type ModifiedSchemaWithRelations<
   T extends Record<string, Table>,
   TSchema extends BaseSchema<T>,
   TModifications extends Modifications<TSchema>,
-  TRelations extends
-    ExtractTablesWithRelationsParts<AnyRelationsBuilderConfig, T> | never =
-    never,
+  TRelations extends ExtractTablesWithRelationsParts<
+    AnyRelationsBuilderConfig,
+    T
+  > = never,
   _TModifiedSchema extends ModifiedSchema<T, TSchema, TModifications> =
     ModifiedSchema<T, TSchema, TModifications>,
 > = {
@@ -206,8 +216,8 @@ type _FlattenModifiedSchema<
   [Operation in Operations]: MergeUnion<
     keyof TValues extends infer EKey ?
       EKey extends keyof TValues ?
-        TValues[EKey][Operation] extends z.ZodObject<infer Inner> ?
-          Inner
+        TValues[EKey][Operation] extends StandardSchemaV1 ?
+          InferOutput<TValues[EKey][Operation]>
         : never
       : never
     : never,
@@ -226,11 +236,7 @@ type FlattenModifiedSchema<
     TModifications,
     TMergeBehaviour
   > = _FlattenModifiedSchema<T, TSchema, TModifications, TMergeBehaviour>,
-> = {
-  [Key in keyof TFlat]: z.ZodObject<
-    TFlat[Key] extends z.ZodRawShape ? TFlat[Key] : z.ZodRawShape
-  >;
-};
+> = { [Key in keyof TFlat]: StandardSchemaV1<TFlat[Key]> };
 
 type SharedPropertiesEqual<A extends object, B extends object> =
   keyof A | keyof B extends infer Key ?
@@ -264,10 +270,7 @@ type CreateDiffsByOperation<
   TAfter extends Partial<Record<Operations, object>>,
 > = {
   [Operation in Operations]: Operation extends keyof TAfter ?
-    CreateDiff<
-      ExtractInnerObject<TBefore[Operation]>,
-      ExtractInnerObject<TAfter[Operation]>
-    >
+    CreateDiff<InferOutput<TBefore[Operation]>, InferOutput<TAfter[Operation]>>
   : EmptyDiff;
 };
 
@@ -277,11 +280,8 @@ type ApplyDiffsByOperation<
 > = {
   [Operation in Operations]: z.ZodObject<
     Operation extends keyof TDiffs ?
-      ApplyDiff<
-        ExtractInnerObject<TSource[Operation]>,
-        TDiffs[Operation] & object
-      >
-    : ExtractInnerObject<TSource[Operation]>
+      ApplyDiff<InferOutput<TSource[Operation]>, TDiffs[Operation] & object>
+    : InferOutput<TSource[Operation]>
   >;
 };
 
@@ -328,7 +328,7 @@ type SimpleSchemaModifier = {
   ) => SimpleSchemaModifier;
   modifyUnited: (
     key: string,
-    factory: (base: z.ZodObject) => z.ZodObject,
+    factory: (base: StandardSchemaV1) => StandardSchemaV1,
   ) => SimpleSchemaModifier;
   withRelations: (
     relations: ExtractTablesWithRelationsParts<
@@ -345,14 +345,16 @@ type SchemaModifier<
     keyof TSchema,
     Record<Operations, EmptyDiff>
   >,
-  TRelations extends
-    ExtractTablesWithRelationsParts<AnyRelationsBuilderConfig, T> | never =
-    never,
+  TRelations extends ExtractTablesWithRelationsParts<
+    AnyRelationsBuilderConfig,
+    T
+  > = never,
 > = {
   /**
    * Create a modified schema
    * @returns
    */
+  // todo: add adapter
   create: () => ModifiedSchemaWithRelations<
     T,
     TSchema,
@@ -371,7 +373,7 @@ type SchemaModifier<
       TSchema[Key] & Record<Operations, object>,
       TModifications[Key]
     >,
-    CModification extends Partial<Record<Operations, z.ZodObject>>,
+    CModification extends Partial<Record<Operations, StandardSchemaV1>>,
   >(
     key: Key,
     factory: (input: Base) => GuardModification<CModification, Base>,
@@ -397,7 +399,7 @@ type SchemaModifier<
       >,
       "strict"
     >,
-    CModificationUnited extends z.ZodObject,
+    CModificationUnited extends StandardSchemaV1,
   >(
     key: Key,
     factory: (
@@ -417,10 +419,7 @@ type SchemaModifier<
         TModifications[Key],
         Record<
           Operations,
-          CreateDiff<
-            ExtractInnerObject<BaseUnited>,
-            ExtractInnerObject<CModificationUnited>
-          >
+          CreateDiff<InferOutput<BaseUnited>, InferOutput<CModificationUnited>>
         >
       >
     >,
@@ -443,7 +442,7 @@ type SchemaModifier<
    */
   modifyAll: <
     Base extends FlattenModifiedSchema<T, TSchema, TModifications, "strict">,
-    CModifications extends Partial<Record<Operations, z.ZodObject>>,
+    CModifications extends Partial<Record<Operations, StandardSchemaV1>>,
   >(
     factory: (input: Base) => GuardModification<CModifications, Base>,
   ) => SchemaModifier<
@@ -475,7 +474,7 @@ const createBaseSchemaGroup = (table: Table) => ({
 const selectWithRelations =
   (
     modifiedSchema: Record<string, SchemaGroup>,
-    relations: Record<string, Record<string, Relation<string>>>,
+    relations: Record<string, Record<string, Relation>>,
     currentEntry: string,
   ) =>
   (selectedRelations: Record<string, unknown>) => {
@@ -509,9 +508,9 @@ const selectWithRelations =
           : innerSchema
         : z.array(innerSchema);
 
-      selectWithRelationSchema = selectWithRelationSchema.extend({
+      selectWithRelationSchema = { ...selectWithRelationSchema
         [key]: inner,
-      });
+      };
     }
     return selectWithRelationSchema;
   };
@@ -530,7 +529,7 @@ const createModifiedSchema = (
       return {
         [getTableName(value)]: {
           ...baseSchemaGroup,
-          ...modifications[key]?.(baseSchemaGroup),
+          ...modifications[key](baseSchemaGroup),
         },
       };
     })
@@ -540,20 +539,15 @@ const createModifiedSchema = (
   const modifiedSchemaWithRelations: Record<
     string,
     SchemaGroup & {
-      selectWith?: (relations: Record<string, unknown>) => z._ZodType;
+      selectWith?: (relations: Record<string, unknown>) => StandardSchemaV1;
     }
   > = modifiedSchema;
 
-  const relationsByTableName: Record<
-    string,
-    Record<string, Relation<string>>
-  > = {};
+  const relationsByTableName: Record<string, Record<string, Relation>> = {};
 
   for (const key in relations) {
     const cur = relations[key];
-    if (!cur) continue;
     const schemaEntry = modifiedSchemaWithRelations[getTableName(cur.table)];
-    if (!schemaEntry) continue;
     relationsByTableName[getTableName(cur.table)] = cur.relations;
     schemaEntry.selectWith = selectWithRelations(
       modifiedSchema,
@@ -568,7 +562,7 @@ const createModifiedSchema = (
 const internalSchemaModifier = (
   schema: Record<string, Table>,
   modifications: Record<string, ModificationPipe<SchemaGroup>>,
-  modificationsUnited: Record<string, ModificationPipe<z.ZodObject>>,
+  modificationsUnited: Record<string, ModificationPipe<StandardSchemaV1>>,
   relations?: ExtractTablesWithRelationsParts<
     AnyRelationsBuilderConfig,
     Record<string, Table>
@@ -622,6 +616,6 @@ export const schemaModifier = <T extends Record<string, Table>>(
       .map((key) => ({ [key]: modificationPipe<SchemaGroup>() }))
       .reduce((prev, cur) => ({ ...prev, ...cur }), {}),
     getKeys(schema)
-      .map((key) => ({ [key]: modificationPipe<z.ZodObject>() }))
+      .map((key) => ({ [key]: modificationPipe<StandardSchemaV1>() }))
       .reduce((prev, cur) => ({ ...prev, ...cur }), {}),
   ) as unknown as SchemaModifier<T>;

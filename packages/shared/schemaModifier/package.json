@@ -1,5 +1,5 @@
 {
-  "name": "@game-and-tool-collection/schemaModifier",
+  "name": "@gatc/schemaModifier",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -9,13 +9,14 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "@game-and-tool-collection/source": "./src/index.ts",
+      "@gatc/source": "./src/index.ts",
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     }
   },
   "dependencies": {
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "@gatc/utils": "workspace:*"
   }
 }

@@ -2,7 +2,6 @@ import { relations } from "@nuxthub/db/relations";
 import * as schema from "@nuxthub/db/schema";
 import { extractTablesFromSchema } from "drizzle-orm";
 import * as z from "zod";
-import { schemaModifier } from "../utils/schemaModifier/schemaModifier";
 
 export const timestampMask = { createdAt: true, updatedAt: true } as const;
 
