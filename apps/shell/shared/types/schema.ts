@@ -2,6 +2,7 @@ import { relations } from "@nuxthub/db/relations";
 import * as schema from "@nuxthub/db/schema";
 import { extractTablesFromSchema } from "drizzle-orm";
 import * as z from "zod";
+import { schemaModifier, standardSchemaAdapters } from "@gatc/schemaModifier";
 
 export const timestampMask = { createdAt: true, updatedAt: true } as const;
 
@@ -59,7 +60,10 @@ export const loginSchema = z.object({
 });
 export type Login = z.infer<typeof loginSchema>;
 
-export const dbSchemas = schemaModifier(extractTablesFromSchema(schema))
+export const dbSchemas = schemaModifier(
+  standardSchemaAdapters.zod(),
+  extractTablesFromSchema(schema),
+)
   .modifyAll(({ insert, update }) => ({
     insert: insert.omit(timestampMask),
     update: update.omit(timestampMask),

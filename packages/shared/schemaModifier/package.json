@@ -17,6 +17,8 @@
   },
   "dependencies": {
     "tslib": "^2.3.0",
-    "@gatc/utils": "workspace:*"
+    "@gatc/utils": "workspace:*",
+    "drizzle-orm": "1.0.0-rc.4",
+    "@standard-schema/spec": "^1.1.0"
   }
 }
