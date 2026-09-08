@@ -20,7 +20,8 @@ import {
   createSelectSchema,
   createUpdateSchema,
 } from "drizzle-orm/zod";
-import { StandardSchemaAdapter } from "../standard-schema-adapter/standard-schema-adapter.types";
+import { standardSchemaAdapters } from "../standard-schema-adapter/standard-schema-adapter";
+import { TypeAdapter } from "../standard-schema-adapter/standard-schema-adapter.types";
 import {
   SchemaGroup,
   SchemaModifier,
@@ -38,7 +39,7 @@ const selectWithRelations =
     modifiedSchema: Record<string, SchemaGroup>,
     relations: Record<string, Record<string, Relation>>,
     currentEntry: string,
-    adapter: StandardSchemaAdapter<StandardSchemaV1, StandardSchemaV1<object>>,
+    adapterKey: keyof TypeAdapter,
   ) =>
   (selectedRelations: Record<string, unknown>): StandardSchemaV1<object> => {
     if (!(currentEntry in modifiedSchema)) throw new Error("Invalid key");
@@ -64,10 +65,11 @@ const selectWithRelations =
             modifiedSchema,
             relations,
             target,
-            adapter,
+            adapterKey,
           )(selectedRelations[key] as Record<string, unknown>)
         : modifiedSchema[target].select;
 
+      const adapter = standardSchemaAdapters[adapterKey];
       const inner =
         currentRelation.relationType === "one" ?
           (<One<string>>currentRelation).optional ?
@@ -83,7 +85,7 @@ const selectWithRelations =
 const createModifiedSchema = (
   schema: Record<string, Table>,
   modifications: Record<string, ModificationPipe<SchemaGroup>>,
-  adapter: StandardSchemaAdapter<StandardSchemaV1, StandardSchemaV1<object>>,
+  adapter: keyof TypeAdapter,
   relations?: ExtractTablesWithRelationsParts<
     AnyRelationsBuilderConfig,
     Record<string, Table>
@@ -127,7 +129,7 @@ const createModifiedSchema = (
 };
 
 const internalSchemaModifier = (
-  adapter: StandardSchemaAdapter<StandardSchemaV1, StandardSchemaV1<object>>,
+  adapter: keyof TypeAdapter,
   schema: Record<string, Table>,
   modifications: Record<string, ModificationPipe<SchemaGroup>>,
   modificationsUnited: Record<string, ModificationPipe<StandardSchemaV1>>,
@@ -180,18 +182,14 @@ const internalSchemaModifier = (
 });
 
 export const schemaModifier = <
-  TBaseSchema extends StandardSchemaV1,
-  TObjectSchema extends StandardSchemaV1<object>,
+  TAdapter extends keyof TypeAdapter,
   T extends Record<string, Table>,
 >(
-  adapter: StandardSchemaAdapter<TBaseSchema, TObjectSchema>,
+  adapter: TAdapter,
   schema: T,
-): SchemaModifier<TObjectSchema, T> =>
+): SchemaModifier<TAdapter, T> =>
   internalSchemaModifier(
-    adapter as unknown as StandardSchemaAdapter<
-      StandardSchemaV1,
-      StandardSchemaV1<object>
-    >,
+    adapter,
     schema,
     getKeys(schema)
       .map((key) => ({ [key]: modificationPipe<SchemaGroup>() }))
@@ -199,4 +197,4 @@ export const schemaModifier = <
     getKeys(schema)
       .map((key) => ({ [key]: modificationPipe<StandardSchemaV1>() }))
       .reduce((prev, cur) => ({ ...prev, ...cur }), {}),
-  ) as unknown as SchemaModifier<TObjectSchema, T>;
+  ) as unknown as SchemaModifier<TAdapter, T>;

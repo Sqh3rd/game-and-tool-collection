@@ -1,4 +1,5 @@
 import { StandardSchemaV1, StandardTypedV1 } from "@standard-schema/spec";
+
 export type IfThenElse<If extends boolean, Then, Else> =
   If extends true ? Then : Else;
 
