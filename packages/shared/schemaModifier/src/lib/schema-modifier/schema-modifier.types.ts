@@ -112,7 +112,6 @@ export type ModifiedSchema<
   >,
 > = {
   [Key in keyof TSchema]: ApplyDiffsByOperation<
-    TAdapter,
     TSchema[Key] & Record<Operations, StandardSchemaV1<object>>,
     TModifications[Key]
   >;
@@ -265,9 +264,7 @@ export type FlattenModifiedSchema<
     TModifications,
     TMergeBehaviour
   >,
-> = {
-  [Key in keyof TFlat]: TypeAdapter<StandardSchemaV1<TFlat[Key]>>[TAdapter];
-};
+> = { [Key in keyof TFlat]: StandardSchemaV1<TFlat[Key]> };
 
 export type SharedPropertiesEqual<A extends object, B extends object> =
   keyof A | keyof B extends infer Key ?
@@ -297,14 +294,8 @@ type GuardModification<
 >;
 
 export type CreateDiffsByOperation<
-  TAdapter extends keyof TypeAdapter,
-  TBefore extends Record<
-    Operations,
-    TypeAdapter<StandardSchemaV1<object>>[TAdapter]
-  >,
-  TAfter extends Partial<
-    Record<Operations, TypeAdapter<StandardSchemaV1<object>>[TAdapter]>
-  >,
+  TBefore extends Record<Operations, StandardSchemaV1<object>>,
+  TAfter extends Partial<Record<Operations, StandardSchemaV1<object>>>,
 > = {
   [Operation in Operations]: Operation extends keyof TAfter ?
     CreateDiff<
@@ -315,20 +306,17 @@ export type CreateDiffsByOperation<
 };
 
 export type ApplyDiffsByOperation<
-  TAdapter extends keyof TypeAdapter,
   TSource extends Record<Operations, StandardSchemaV1<object>>,
   TDiffs extends Partial<Record<Operations, Diff>>,
 > = {
-  [Operation in Operations]: TypeAdapter<
-    StandardSchemaV1<
-      Operation extends keyof TDiffs ?
-        ApplyDiff<
-          StandardTypedV1.InferOutput<TSource[Operation]>,
-          NonNullable<TDiffs[Operation]>
-        >
-      : StandardTypedV1.InferOutput<TSource[Operation]>
-    >
-  >[TAdapter];
+  [Operation in Operations]: StandardSchemaV1<
+    Operation extends keyof TDiffs ?
+      ApplyDiff<
+        StandardTypedV1.InferOutput<TSource[Operation]>,
+        NonNullable<TDiffs[Operation]>
+      >
+    : StandardTypedV1.InferOutput<TSource[Operation]>
+  >;
 };
 
 export type MergeDiffsByOperation<
@@ -366,17 +354,13 @@ export type MergeDiffToModification<
 };
 
 export type SimpleSchemaModifier = {
-  create: () => Record<string, SchemaGroup<keyof TypeAdapter>>;
+  create: () => Record<string, SchemaGroup>;
   modifyAll: (
-    factory: (
-      base: SchemaGroup<keyof TypeAdapter>,
-    ) => Partial<SchemaGroup<keyof TypeAdapter>>,
+    factory: (base: SchemaGroup) => Partial<SchemaGroup>,
   ) => SimpleSchemaModifier;
   modify: (
     key: string,
-    factory: (
-      base: SchemaGroup<keyof TypeAdapter>,
-    ) => Partial<SchemaGroup<keyof TypeAdapter>>,
+    factory: (base: SchemaGroup) => Partial<SchemaGroup>,
   ) => SimpleSchemaModifier;
   modifyUnited: (
     key: string,
@@ -423,9 +407,7 @@ export type SchemaModifier<
   modify: <
     Key extends keyof TSchema,
     Base extends ApplyDiffsByOperation<
-      TAdapter,
-      TSchema[Key]
-        & Record<Operations, TypeAdapter<StandardSchemaV1<object>>[TAdapter]>,
+      TSchema[Key] & Record<Operations, StandardSchemaV1<object>>,
       TModifications[Key]
     >,
     CModification extends Partial<
@@ -442,7 +424,7 @@ export type SchemaModifier<
       TAdapter,
       TModifications,
       Key,
-      CreateDiffsByOperation<TAdapter, Base, CModification>
+      CreateDiffsByOperation<Base, CModification>
     >,
     TRelations
   >;
@@ -452,7 +434,6 @@ export type SchemaModifier<
     BaseUnited extends MergeUnion<
       Values<
         ApplyDiffsByOperation<
-          TAdapter,
           TSchema[Key] & Record<Operations, StandardSchemaV1<object>>,
           TModifications[Key]
         >
@@ -525,7 +506,7 @@ export type SchemaModifier<
     MergeDiffToAll<
       TAdapter,
       TModifications,
-      CreateDiffsByOperation<TAdapter, Base, CModifications>
+      CreateDiffsByOperation<Base, CModifications>
     >,
     TRelations
   >;
