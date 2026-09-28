@@ -96,5 +96,5 @@ export const dbSchemas = schemaModifier("zod", extractTablesFromSchema(schema))
   )
   .withRelations(relations)
   .create();
-const game = dbSchemas.fagrc_game.selectWith({ icon: true });
+const game = dbSchemas.fagrc_game.insert;
 type T = z.infer<typeof game>;

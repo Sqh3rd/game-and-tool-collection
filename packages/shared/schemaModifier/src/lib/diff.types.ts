@@ -48,7 +48,7 @@ export type ApplyDiff<TSource extends object, TDiff extends Diff> = Omit<
   & TDiff["added"]
   & IfThenElse<
     UnionIsEmpty<keyof TDiff["changed"]>,
-    object,
+    {},
     { [Key in keyof TDiff["changed"]]: TDiff["changed"][Key]["after"] }
   >;
 

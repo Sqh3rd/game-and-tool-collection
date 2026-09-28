@@ -17,9 +17,7 @@ import {
   Many,
   AnyRelation,
   Relation,
-  IsNever,
 } from "drizzle-orm";
-import { BuildSchema, CoerceOptions } from "drizzle-orm/zod";
 import {
   Diff,
   CreateDiff,
@@ -27,7 +25,10 @@ import {
   ApplyDiff,
   MergeDiffs,
 } from "../diff.types";
-import { TypeAdapter } from "../standard-schema-adapter/standard-schema-adapter.types";
+import {
+  TypeAdapter,
+  SchemaBuildAdapter,
+} from "../standard-schema-adapter/standard-schema-adapter.types";
 
 export type Operations = "insert" | "select" | "update";
 
@@ -49,15 +50,20 @@ export type SchemaGroupFromTable<
   TTable extends Table,
 > = SchemaGroup<
   TAdapter,
-  BuildSchema<"insert", TTable["_"]["columns"], undefined, CoerceOptions>,
-  BuildSchema<"select", TTable["_"]["columns"], undefined, CoerceOptions>,
-  BuildSchema<"update", TTable["_"]["columns"], undefined, CoerceOptions>
+  SchemaBuildAdapter<"insert", TTable>[TAdapter],
+  SchemaBuildAdapter<"select", TTable>[TAdapter],
+  SchemaBuildAdapter<"update", TTable>[TAdapter]
 >;
 
 export type SimpleSchema<
   TAdapter extends keyof TypeAdapter,
   T extends Record<string, Table> = Record<string, Table>,
-> = { [Key in keyof T as T[Key]["_"]["name"]]: SchemaGroup<TAdapter> };
+> = {
+  [Key in keyof T as T[Key]["_"]["name"]]: SchemaGroupFromTable<
+    TAdapter,
+    T[Key]
+  >;
+};
 export type ModificationsByOperation = Record<Operations, Diff>;
 export type Modifications<
   TAdapter extends keyof TypeAdapter,
@@ -112,9 +118,15 @@ export type ModifiedSchema<
   >,
 > = {
   [Key in keyof TSchema]: ApplyDiffsByOperation<
-    TSchema[Key] & Record<Operations, StandardSchemaV1<object>>,
+    TSchema[Key],
     TModifications[Key]
-  >;
+  > extends infer EModifiedEntry ?
+    {
+      [IKey in keyof EModifiedEntry & Operations]: TypeAdapter<
+        EModifiedEntry[IKey]
+      >[TAdapter];
+    }
+  : Record<Operations, TypeAdapter<object>[TAdapter]>;
 };
 
 export type SelectNestedRelations<
@@ -152,35 +164,33 @@ export type SelectNestedRelationsToSchema<
     keyof Relations
   >,
 > = TypeAdapter<
-  StandardSchemaV1<
-    StandardTypedV1.InferOutput<TModifiedSchema[TCurrentEntry]["select"]>
-      & (TSelectedNestedRelations extends true ? object
-      : IsNever<keyof TSelectedNestedRelations> extends true ? object
-      : {
-          [Key in keyof TSelectedNestedRelations]: ForceAccess<
-            ForceAccess<Relations<TRelations>, TCurrentEntry> & object,
-            Key
-          > extends infer ECurrentRelation ?
-            ECurrentRelation extends Relation<infer ETargetTable> ?
-              SelectNestedRelationsToSchema<
-                TAdapter,
-                T,
-                TSchema,
-                TModifications,
-                TModifiedSchema,
-                TRelations,
-                ETargetTable,
-                TSelectedNestedRelations[Key]
-              > extends infer EInner extends StandardSchemaV1 ?
-                ECurrentRelation extends One<ETargetTable, infer EOptional> ?
-                  IfThenElse<EOptional, EInner | undefined, EInner>
-                : ECurrentRelation extends Many<ETargetTable> ? EInner[]
-                : never
+  ForceAccess<TModifiedSchema[TCurrentEntry], "select">
+    & (TSelectedNestedRelations extends true ? object
+    : UnionIsEmpty<keyof TSelectedNestedRelations> extends true ? object
+    : {
+        [Key in keyof TSelectedNestedRelations]: ForceAccess<
+          ForceAccess<Relations<TRelations>, TCurrentEntry> & object,
+          Key
+        > extends infer ECurrentRelation ?
+          ECurrentRelation extends Relation<infer ETargetTable> ?
+            SelectNestedRelationsToSchema<
+              TAdapter,
+              T,
+              TSchema,
+              TModifications,
+              TModifiedSchema,
+              TRelations,
+              ETargetTable,
+              TSelectedNestedRelations[Key]
+            > extends infer EInner extends StandardSchemaV1 ?
+              ECurrentRelation extends One<ETargetTable, infer EOptional> ?
+                IfThenElse<EOptional, EInner | undefined, EInner>
+              : ECurrentRelation extends Many<ETargetTable> ? EInner[]
               : never
             : never
-          : never;
-        })
-  >
+          : never
+        : never;
+      })
 >[TAdapter];
 
 export type ModifiedSchemaWithRelations<
@@ -222,7 +232,7 @@ export type ModifiedSchemaWithRelations<
       });
 };
 
-export type _FlattenModifiedSchema<
+export type FlattenModifiedSchema<
   TAdapter extends keyof TypeAdapter,
   T extends Record<string, Table>,
   TSchema extends SimpleSchema<TAdapter, T>,
@@ -231,40 +241,23 @@ export type _FlattenModifiedSchema<
   TValues extends ModifiedSchema<TAdapter, T, TSchema, TModifications> =
     ModifiedSchema<TAdapter, T, TSchema, TModifications>,
 > = {
-  [Operation in Operations]: MergeUnion<
-    keyof TValues extends infer EKey ?
-      EKey extends keyof TValues ?
-        TValues[EKey][Operation] extends (
-          infer ESS extends StandardSchemaV1<object>
-        ) ?
-          StandardTypedV1.InferOutput<ESS>
-        : object
-      : never
-    : never,
-    TMergeBehaviour
-  >;
+  [Operation in Operations]: TypeAdapter<
+    StandardSchemaV1<
+      MergeUnion<
+        keyof TValues extends infer EKey ?
+          EKey extends keyof TValues ?
+            ForceAccess<TValues[EKey], Operation> extends (
+              infer ESS extends StandardSchemaV1<object>
+            ) ?
+              StandardTypedV1.InferOutput<ESS>
+            : object
+          : never
+        : never,
+        TMergeBehaviour
+      >
+    >
+  >[TAdapter];
 };
-
-export type FlattenModifiedSchema<
-  TAdapter extends keyof TypeAdapter,
-  T extends Record<string, Table>,
-  TSchema extends SimpleSchema<TAdapter, T>,
-  TModifications extends Modifications<TAdapter, TSchema>,
-  TMergeBehaviour extends MergeBehaviour,
-  TFlat extends _FlattenModifiedSchema<
-    TAdapter,
-    T,
-    TSchema,
-    TModifications,
-    TMergeBehaviour
-  > = _FlattenModifiedSchema<
-    TAdapter,
-    T,
-    TSchema,
-    TModifications,
-    TMergeBehaviour
-  >,
-> = { [Key in keyof TFlat]: StandardSchemaV1<TFlat[Key]> };
 
 export type SharedPropertiesEqual<A extends object, B extends object> =
   keyof A | keyof B extends infer Key ?
@@ -294,30 +287,39 @@ type GuardModification<
 >;
 
 export type CreateDiffsByOperation<
-  TBefore extends Record<Operations, StandardSchemaV1<object>>,
-  TAfter extends Partial<Record<Operations, StandardSchemaV1<object>>>,
+  TBefore extends object,
+  TAfter extends Partial<Record<Operations, object>>,
 > = {
-  [Operation in Operations]: Operation extends keyof TAfter ?
-    CreateDiff<
-      StandardTypedV1.InferOutput<TBefore[Operation]>,
-      StandardTypedV1.InferOutput<NonNullable<TAfter[Operation]>>
-    >
+  [Operation in Operations]: TBefore extends Record<Operations, object> ?
+    TBefore[Operation] extends StandardSchemaV1 ?
+      Operation extends keyof TAfter ?
+        TAfter[Operation] extends StandardSchemaV1 ?
+          StandardTypedV1.InferOutput<TBefore[Operation]> extends (
+            infer EBefore extends object
+          ) ?
+            StandardTypedV1.InferOutput<TAfter[Operation]> extends (
+              infer EAfterInner extends object
+            ) ?
+              CreateDiff<EBefore, NonNullable<EAfterInner>>
+            : EmptyDiff
+          : EmptyDiff
+        : EmptyDiff
+      : EmptyDiff
+    : EmptyDiff
   : EmptyDiff;
 };
 
 export type ApplyDiffsByOperation<
-  TSource extends Record<Operations, StandardSchemaV1<object>>,
+  TSource,
   TDiffs extends Partial<Record<Operations, Diff>>,
-> = {
-  [Operation in Operations]: StandardSchemaV1<
-    Operation extends keyof TDiffs ?
-      ApplyDiff<
-        StandardTypedV1.InferOutput<TSource[Operation]>,
-        NonNullable<TDiffs[Operation]>
-      >
-    : StandardTypedV1.InferOutput<TSource[Operation]>
-  >;
-};
+> =
+  TSource extends Record<Operations, object> ?
+    {
+      [Operation in Operations]: Operation extends keyof TDiffs ?
+        ApplyDiff<TSource[Operation], NonNullable<TDiffs[Operation]>>
+      : TSource[Operation];
+    }
+  : Record<Operations, object>;
 
 export type MergeDiffsByOperation<
   TBefore extends Record<Operations, Diff>,
@@ -406,10 +408,12 @@ export type SchemaModifier<
    */
   modify: <
     Key extends keyof TSchema,
-    Base extends ApplyDiffsByOperation<
-      TSchema[Key] & Record<Operations, StandardSchemaV1<object>>,
+    Base extends (ApplyDiffsByOperation<
+      TSchema[Key],
       TModifications[Key]
-    >,
+    > extends infer EBase ?
+      { [Key in keyof EBase]: TypeAdapter<EBase[Key]>[TAdapter] }
+    : never),
     CModification extends Partial<
       Record<Operations, TypeAdapter<StandardSchemaV1<object>>[TAdapter]>
     >,
@@ -432,12 +436,7 @@ export type SchemaModifier<
   modifyUnited: <
     Key extends keyof TSchema,
     BaseUnited extends MergeUnion<
-      Values<
-        ApplyDiffsByOperation<
-          TSchema[Key] & Record<Operations, StandardSchemaV1<object>>,
-          TModifications[Key]
-        >
-      >,
+      Values<ApplyDiffsByOperation<TSchema[Key], TModifications[Key]>> & object,
       "strict"
     >,
     CModificationUnited extends TypeAdapter<StandardSchemaV1<object>>[TAdapter],

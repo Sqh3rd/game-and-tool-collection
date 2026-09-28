@@ -2,6 +2,7 @@ import { StandardSchemaV1 } from "@standard-schema/spec";
 import { Table } from "drizzle-orm";
 import { Operations } from "../schema-modifier/schema-modifier.types";
 import { z } from "zod";
+import { BuildSchema, CoerceOptions } from "drizzle-orm/zod";
 
 export type StandardSchemaAdapter<
   BaseType extends StandardSchemaV1,
@@ -13,8 +14,12 @@ export type StandardSchemaAdapter<
   array: (val: StandardSchemaV1) => BaseType;
 };
 
-export type TypeAdapter<T extends StandardSchemaV1 = StandardSchemaV1> = {
-  zod: ZodTypeAdapter<T>;
+export type TypeAdapter<T = unknown> = { zod: ZodTypeAdapter<T> };
+export type SchemaBuildAdapter<
+  Type extends "insert" | "select" | "update",
+  TTable extends Table,
+> = {
+  zod: BuildSchema<Type, TTable["_"]["columns"], undefined, CoerceOptions>;
 };
 
 type ZodTypeAdapter<T> =
