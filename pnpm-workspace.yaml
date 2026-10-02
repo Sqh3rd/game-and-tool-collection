@@ -13,4 +13,4 @@ minimumReleaseAgeExclude:
 onlyBuiltDependencies:
   - "nx"
 overrides:
-  "@nuxthub/core": "link:../nuxthub-core"
+  "@nuxthub/core": "link:../../source_code/nuxthub-core"

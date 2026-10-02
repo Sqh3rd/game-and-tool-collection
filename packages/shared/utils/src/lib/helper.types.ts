@@ -13,7 +13,14 @@ export type Equals<A, B> =
     : false
   : false;
 export type IsNever<T> = Equals<[T], [never]>;
-
+export type Or<T extends boolean[]> =
+  T extends [infer First extends boolean, ...infer Rest extends boolean[]] ?
+    First extends true ?
+      true
+    : Or<Rest>
+  : T extends [infer First extends boolean] ? First
+  : false;
+export type IsFalse<T extends boolean> = T extends false ? true : false;
 /**
  * Assumes both A and B are unions.
  *
@@ -29,10 +36,27 @@ export type Includes<A, B> = AnyOverlap<A, B> extends false ? false : true;
 
 export type UnionIsEmpty<A> = [A] extends [never] ? true : false;
 export type UnionHasEntries<A> = Not<UnionIsEmpty<A>>;
+export type IsUnion<A> =
+  [A] extends infer EEntry ?
+    EEntry extends [infer EInner] ?
+      EInner extends A ?
+        UnionHasEntries<Exclude<A, EInner>>
+      : never
+    : never
+  : never;
 export type UnionToIntersection<A> =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (A extends any ? (a: A) => void : never) extends (a: infer B) => void ? B
   : never;
+type LastOf<T> =
+  UnionToIntersection<T extends any ? () => T : never> extends () => infer R ? R
+  : never;
+type Push<T extends any[], V> = [...T, V];
+export type UnionToTuple<
+  T,
+  L = LastOf<T>,
+  N = [T] extends [never] ? true : false,
+> = true extends N ? [] : Push<UnionToTuple<Exclude<T, L>>, L>;
 
 export type NeverIfEmpty<T extends object> =
   [keyof T] extends [never] ? never : T;

@@ -60,7 +60,10 @@ export const loginSchema = z.object({
 });
 export type Login = z.infer<typeof loginSchema>;
 
-export const dbSchemas = schemaModifier("zod", extractTablesFromSchema(schema))
+export const dbSchemas = schemaModifier(
+  "valibot",
+  extractTablesFromSchema(schema),
+)
   .modifyAll(({ insert, update }) => ({
     insert: insert.omit(timestampMask),
     update: update.omit(timestampMask),

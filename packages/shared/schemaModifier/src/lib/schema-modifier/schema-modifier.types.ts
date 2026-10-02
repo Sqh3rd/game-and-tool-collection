@@ -313,7 +313,7 @@ export type ApplyDiffsByOperation<
   TSource,
   TDiffs extends Partial<Record<Operations, Diff>>,
 > =
-  TSource extends Record<Operations, object> ?
+  TSource extends Record<Operations, StandardSchemaV1> ?
     {
       [Operation in Operations]: Operation extends keyof TDiffs ?
         ApplyDiff<TSource[Operation], NonNullable<TDiffs[Operation]>>
@@ -408,12 +408,7 @@ export type SchemaModifier<
    */
   modify: <
     Key extends keyof TSchema,
-    Base extends (ApplyDiffsByOperation<
-      TSchema[Key],
-      TModifications[Key]
-    > extends infer EBase ?
-      { [Key in keyof EBase]: TypeAdapter<EBase[Key]>[TAdapter] }
-    : never),
+    Base extends ApplyDiffsByOperation<TSchema[Key], TModifications[Key]>,
     CModification extends Partial<
       Record<Operations, TypeAdapter<StandardSchemaV1<object>>[TAdapter]>
     >,

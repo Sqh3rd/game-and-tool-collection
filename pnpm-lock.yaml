@@ -5,7 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@nuxthub/core': link:../nuxthub-core
+  '@nuxthub/core': link:../../source_code/nuxthub-core
 
 importers:
 
@@ -15,8 +15,8 @@ importers:
         specifier: ^0.5.4
         version: 0.5.4
       '@nuxthub/core':
-        specifier: link:../nuxthub-core
-        version: link:../nuxthub-core
+        specifier: link:../../source_code/nuxthub-core
+        version: link:../../source_code/nuxthub-core
       '@pinia/nuxt':
         specifier: ^1.0.1
         version: 1.0.1(magic-string@1.1.0)(magicast@0.5.3)(oxc-parser@0.140.0)(pinia@4.0.2(@vue/devtools-api@8.2.1)(typescript@6.0.3)(vue@3.5.40(typescript@6.0.3)))(rolldown@1.2.0)(unplugin@3.3.0(esbuild@0.28.1)(rolldown@1.2.0)(rollup@4.62.2)(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.101.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0)))
@@ -190,7 +190,7 @@ importers:
         specifier: ^2.8.1
         version: 2.8.1
       typescript:
-        specifier: ~6.0.0
+        specifier: ^6.0.0
         version: 6.0.3
       typescript-eslint:
         specifier: ^8.65.0
@@ -233,10 +233,17 @@ importers:
         version: 1.1.0
       drizzle-orm:
         specifier: 1.0.0-rc.4
-        version: 1.0.0-rc.4(@electric-sql/pglite@0.5.4)(@types/mssql@9.1.8(@azure/core-client@1.10.1(supports-color@10.2.2))(supports-color@10.2.2))(mssql@11.0.1(@azure/core-client@1.10.1(supports-color@10.2.2))(supports-color@10.2.2))(postgres@3.4.9)(valibot@1.4.2(typescript@6.0.3))(zod@4.4.3)
+        version: 1.0.0-rc.4(@electric-sql/pglite@0.5.4)(@types/mssql@9.1.8(@azure/core-client@1.10.1(supports-color@10.2.2))(supports-color@10.2.2))(mssql@11.0.1(@azure/core-client@1.10.1(supports-color@10.2.2))(supports-color@10.2.2))(postgres@3.4.9)(valibot@1.5.0(typescript@6.0.3))(zod@4.4.3)
       tslib:
         specifier: ^2.3.0
         version: 2.8.1
+    optionalDependencies:
+      valibot:
+        specifier: ^1.5.0
+        version: 1.5.0(typescript@6.0.3)
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
 
   packages/shared/utils:
     dependencies:
@@ -6836,6 +6843,14 @@ packages:
       typescript:
         optional: true
 
+  valibot@1.5.0:
+    resolution: {integrity: sha512-nil6AkP2TChWL43Z5uJ6GTxX01CUA+g8LWUM+N/rB9NBbkUMaUsi9PUNzlUPgoKASgmx9f7eGOYpJ04/fSa6FQ==}
+    peerDependencies:
+      typescript: '>=5'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   vite-dev-rpc@2.0.0:
     resolution: {integrity: sha512-yKwbTwdHKSD2k/aGqyWpPHepo45OQc8lH3/6IfT4ZqeKE26ooKvi4WIEKzqWav8v+9Is8u1k8q54hvOmqASazA==}
     peerDependencies:
@@ -7308,11 +7323,11 @@ snapshots:
       - supports-color
     optional: true
 
-  '@azure/core-http-compat@2.4.0(@azure/core-client@1.10.1(supports-color@10.2.2))(@azure/core-rest-pipeline@1.23.0(supports-color@7.2.0))':
+  '@azure/core-http-compat@2.4.0(@azure/core-client@1.10.1(supports-color@10.2.2))(@azure/core-rest-pipeline@1.23.0(supports-color@10.2.2))':
     dependencies:
       '@azure/abort-controller': 2.1.2
       '@azure/core-client': 1.10.1(supports-color@10.2.2)
-      '@azure/core-rest-pipeline': 1.23.0(supports-color@7.2.0)
+      '@azure/core-rest-pipeline': 1.23.0(supports-color@10.2.2)
     optional: true
 
   '@azure/core-http-compat@2.4.0(@azure/core-client@1.10.1(supports-color@7.2.0))(@azure/core-rest-pipeline@1.23.0(supports-color@7.2.0))':
@@ -7463,7 +7478,7 @@ snapshots:
       '@azure-rest/core-client': 2.6.0(supports-color@10.2.2)
       '@azure/abort-controller': 2.1.2
       '@azure/core-auth': 1.10.1(supports-color@10.2.2)
-      '@azure/core-http-compat': 2.4.0(@azure/core-client@1.10.1(supports-color@10.2.2))(@azure/core-rest-pipeline@1.23.0(supports-color@7.2.0))
+      '@azure/core-http-compat': 2.4.0(@azure/core-client@1.10.1(supports-color@10.2.2))(@azure/core-rest-pipeline@1.23.0(supports-color@10.2.2))
       '@azure/core-lro': 2.7.2(supports-color@10.2.2)
       '@azure/core-paging': 1.6.2
       '@azure/core-rest-pipeline': 1.23.0(supports-color@10.2.2)
@@ -11573,13 +11588,13 @@ snapshots:
       get-tsconfig: 4.14.0
       jiti: 2.7.0
 
-  drizzle-orm@1.0.0-rc.4(@electric-sql/pglite@0.5.4)(@types/mssql@9.1.8(@azure/core-client@1.10.1(supports-color@10.2.2))(supports-color@10.2.2))(mssql@11.0.1(@azure/core-client@1.10.1(supports-color@10.2.2))(supports-color@10.2.2))(postgres@3.4.9)(valibot@1.4.2(typescript@6.0.3))(zod@4.4.3):
+  drizzle-orm@1.0.0-rc.4(@electric-sql/pglite@0.5.4)(@types/mssql@9.1.8(@azure/core-client@1.10.1(supports-color@10.2.2))(supports-color@10.2.2))(mssql@11.0.1(@azure/core-client@1.10.1(supports-color@10.2.2))(supports-color@10.2.2))(postgres@3.4.9)(valibot@1.5.0(typescript@6.0.3))(zod@4.4.3):
     optionalDependencies:
       '@electric-sql/pglite': 0.5.4
       '@types/mssql': 9.1.8(@azure/core-client@1.10.1(supports-color@10.2.2))(supports-color@10.2.2)
       mssql: 11.0.1(@azure/core-client@1.10.1(supports-color@10.2.2))(supports-color@10.2.2)
       postgres: 3.4.9
-      valibot: 1.4.2(typescript@6.0.3)
+      valibot: 1.5.0(typescript@6.0.3)
       zod: 4.4.3
 
   drizzle-orm@1.0.0-rc.4(@electric-sql/pglite@0.5.4)(@types/mssql@9.1.8(@azure/core-client@1.10.1(supports-color@7.2.0))(supports-color@7.2.0))(mssql@11.0.1(@azure/core-client@1.10.1(supports-color@7.2.0))(supports-color@7.2.0))(postgres@3.4.9)(valibot@1.4.2(typescript@6.0.3))(zod@4.4.3):
@@ -14805,6 +14820,11 @@ snapshots:
   valibot@1.4.2(typescript@6.0.3):
     optionalDependencies:
       typescript: 6.0.3
+
+  valibot@1.5.0(typescript@6.0.3):
+    optionalDependencies:
+      typescript: 6.0.3
+    optional: true
 
   vite-dev-rpc@2.0.0(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.101.0)(terser@5.49.0)(tsx@4.23.0)(yaml@2.9.0)):
     dependencies:
