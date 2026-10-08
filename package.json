@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {},
   "private": true,
-  "packageManager": "pnpm@11.18.0",
+  "packageManager": "pnpm@12.10.1",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@nuxt/devtools": "^3.0.0",

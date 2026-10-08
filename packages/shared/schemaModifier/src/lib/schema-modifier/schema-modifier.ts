@@ -15,35 +15,28 @@ import {
   type Relation,
   type Table,
 } from "drizzle-orm";
-import {
-  createInsertSchema,
-  createSelectSchema,
-  createUpdateSchema,
-} from "drizzle-orm/zod";
 import { standardSchemaAdapters } from "../standard-schema-adapter/standard-schema-adapter";
-import { TypeAdapter } from "../standard-schema-adapter/standard-schema-adapter.types";
+import {
+  StandardSchemaAdapter,
+  ValidationLibs,
+} from "../standard-schema-adapter/standard-schema-adapter.types";
 import {
   SchemaGroup,
   SchemaModifier,
+  SimpleSchema,
   SimpleSchemaModifier,
 } from "./schema-modifier.types";
-
-const createBaseSchemaGroup = (table: Table) => ({
-  insert: createInsertSchema(table),
-  select: createSelectSchema(table),
-  update: createUpdateSchema(table),
-});
 
 const selectWithRelations =
   (
     modifiedSchema: Record<string, SchemaGroup>,
     relations: Record<string, Record<string, Relation>>,
     currentEntry: string,
-    adapterKey: keyof TypeAdapter,
+    adapter: StandardSchemaAdapter,
   ) =>
   (selectedRelations: Record<string, unknown>): StandardSchemaV1<object> => {
     if (!(currentEntry in modifiedSchema)) throw new Error("Invalid key");
-    let selectWithRelationSchema = modifiedSchema[currentEntry].select;
+    const selectWithRelationSchema = modifiedSchema[currentEntry].select;
     for (const key in selectedRelations) {
       const cur = selectedRelations[key];
       if (
@@ -65,11 +58,10 @@ const selectWithRelations =
             modifiedSchema,
             relations,
             target,
-            adapterKey,
+            adapter,
           )(selectedRelations[key] as Record<string, unknown>)
         : modifiedSchema[target].select;
 
-      const adapter = standardSchemaAdapters[adapterKey];
       const inner =
         currentRelation.relationType === "one" ?
           (<One<string>>currentRelation).optional ?
@@ -77,7 +69,8 @@ const selectWithRelations =
           : innerSchema
         : adapter.array(innerSchema);
 
-      selectWithRelationSchema = { ...selectWithRelationSchema, [key]: inner };
+      (selectWithRelationSchema as unknown as Record<string, object>)[key] =
+        inner;
     }
     return selectWithRelationSchema;
   };
@@ -85,15 +78,16 @@ const selectWithRelations =
 const createModifiedSchema = (
   schema: Record<string, Table>,
   modifications: Record<string, ModificationPipe<SchemaGroup>>,
-  adapter: keyof TypeAdapter,
+  adapterKey: ValidationLibs,
   relations?: ExtractTablesWithRelationsParts<
     AnyRelationsBuilderConfig,
     Record<string, Table>
   >,
 ): Record<string, SchemaGroup> => {
+  const adapter = standardSchemaAdapters[adapterKey];
   const modifiedSchema = getEntries(schema)
     .map(([key, value]) => {
-      const baseSchemaGroup = createBaseSchemaGroup(value);
+      const baseSchemaGroup = adapter.createBaseSchemaGroup(value);
       return {
         [getTableName(value)]: {
           ...baseSchemaGroup,
@@ -129,7 +123,7 @@ const createModifiedSchema = (
 };
 
 const internalSchemaModifier = (
-  adapter: keyof TypeAdapter,
+  adapter: ValidationLibs,
   schema: Record<string, Table>,
   modifications: Record<string, ModificationPipe<SchemaGroup>>,
   modificationsUnited: Record<string, ModificationPipe<StandardSchemaV1>>,
@@ -182,8 +176,8 @@ const internalSchemaModifier = (
 });
 
 export const schemaModifier = <
-  TAdapter extends keyof TypeAdapter,
-  T extends Record<string, Table>,
+  TAdapter extends ValidationLibs,
+  T extends Record<string, Table<any>>,
 >(
   adapter: TAdapter,
   schema: T,
@@ -198,3 +192,11 @@ export const schemaModifier = <
       .map((key) => ({ [key]: modificationPipe<StandardSchemaV1>() }))
       .reduce((prev, cur) => ({ ...prev, ...cur }), {}),
   ) as unknown as SchemaModifier<TAdapter, T>;
+
+export const createSchema = <
+  TAdapter extends ValidationLibs,
+  T extends Record<string, Table<any>>,
+>(
+  adapter: TAdapter,
+  schema: T,
+): SimpleSchema<TAdapter, T> => ({}) as SimpleSchema<TAdapter, T>;

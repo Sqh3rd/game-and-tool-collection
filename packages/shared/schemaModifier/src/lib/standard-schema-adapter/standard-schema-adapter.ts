@@ -1,20 +1,31 @@
-import {
-  createInsertSchema,
-  createSelectSchema,
-  createUpdateSchema,
-} from "drizzle-orm/zod";
+import * as dz from "drizzle-orm/zod";
+import * as dv from "drizzle-orm/valibot";
 import * as z from "zod";
-import { StandardSchemaAdapters } from "./standard-schema-adapter.types";
+import * as v from "valibot";
+import {
+  BaseValues,
+  StandardSchemaAdapters,
+} from "./standard-schema-adapter.types";
 
 export const standardSchemaAdapters: StandardSchemaAdapters = {
-  zod: {
-    optional: (it) => z.optional(it as z.ZodType),
-    array: (it) => z.array(it as z.ZodType),
+  valibot: {
+    optional: (it) => v.optional(it as BaseValues["valibot"]["Base"]),
+    array: (it) => v.array(it as BaseValues["valibot"]["Base"]),
 
     createBaseSchemaGroup: (table) => ({
-      insert: createInsertSchema(table),
-      select: createSelectSchema(table),
-      update: createUpdateSchema(table),
+      insert: dv.createInsertSchema(table),
+      select: dv.createSelectSchema(table),
+      update: dv.createUpdateSchema(table),
+    }),
+  },
+  zod: {
+    optional: (it) => z.optional(it as BaseValues["zod"]["Base"]),
+    array: (it) => z.array(it as BaseValues["zod"]["Base"]),
+
+    createBaseSchemaGroup: (table) => ({
+      insert: dz.createInsertSchema(table),
+      select: dz.createSelectSchema(table),
+      update: dz.createUpdateSchema(table),
     }),
   },
 };
