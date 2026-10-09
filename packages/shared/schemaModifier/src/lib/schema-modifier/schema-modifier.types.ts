@@ -32,6 +32,7 @@ import {
   SchemaBuildAdapter,
   ValidationLibs,
 } from "../standard-schema-adapter/standard-schema-adapter.types";
+import z from "zod";
 
 export type Operations = "insert" | "select" | "update";
 
@@ -110,22 +111,16 @@ export type Relations<
 
 export type ModifiedSchema<
   TAdapter extends ValidationLibs,
-  T extends Record<string, Table> = Record<string, Table>,
-  TSchema extends SimpleSchema<TAdapter, T> = SimpleSchema<TAdapter, T>,
-  TModifications extends Modifications<TAdapter, TSchema> = Modifications<
-    TAdapter,
-    TSchema
-  >,
+  T extends Record<string, Table>,
+  TSchema extends SimpleSchema<TAdapter, T>,
+  TModifications extends Modifications<TAdapter, TSchema>,
 > = {
-  [Key in keyof TSchema]: WrapInner<
+  [Key in keyof TSchema]: ApplyDiffsByOperation<
     TAdapter,
-    ApplyDiffsByOperation<TAdapter, TSchema[Key], TModifications[Key]>
+    TSchema[Key],
+    TModifications[Key]
   >;
 };
-
-type WrapInner<TAdapter extends ValidationLibs, T extends object> = {
-  [Key in keyof T]: Adapter<T[Key], TAdapter>;
-} & {};
 
 export type SelectNestedRelations<
   TRelations extends Relations,
@@ -287,21 +282,21 @@ type GuardModification<
 >;
 
 export type CreateDiffsByOperation<
-  TBefore extends object,
+  TBefore extends Record<Operations, object>,
   TAfter extends Partial<Record<Operations, object>>,
 > = {
-  [Operation in Operations]: TBefore extends Record<Operations, object> ?
+  [Operation in Operations]: Operation extends keyof TAfter ?
     TBefore[Operation] extends StandardSchemaV1 ?
-      Operation extends keyof TAfter ?
-        TAfter[Operation] extends StandardSchemaV1 ?
-          StandardTypedV1.InferOutput<TBefore[Operation]> extends (
-            infer EBefore extends object
+      TAfter[Operation] extends StandardSchemaV1 ?
+        StandardTypedV1.InferOutput<TBefore[Operation]> extends (
+          infer EBefore extends object
+        ) ?
+          Equals<TAfter[Operation], z.ZodObject<{}>> extends true ?
+            CreateDiff<EBefore, {}>
+          : StandardTypedV1.InferOutput<TAfter[Operation]> extends (
+            infer EAfterInner extends object
           ) ?
-            StandardTypedV1.InferOutput<TAfter[Operation]> extends (
-              infer EAfterInner extends object
-            ) ?
-              CreateDiff<EBefore, NonNullable<EAfterInner>>
-            : EmptyDiff
+            CreateDiff<EBefore, NonNullable<EAfterInner>>
           : EmptyDiff
         : EmptyDiff
       : EmptyDiff
@@ -458,7 +453,7 @@ export type SchemaModifier<
   >(
     key: Key,
     factory: (
-      input: BaseUnited,
+      input: Prettify<BaseUnited>,
     ) => Guard<
       Equals<CModificationUnited, BaseUnited>,
       "Unnecessary Modification: Modified Schema is equal to base schema",

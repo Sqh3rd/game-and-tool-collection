@@ -11,19 +11,31 @@ describe("Create Diff", () => {
       CreateDiff<{ a: string }, { a: string }>
     >().toEqualTypeOf<EmptyDiff>());
 
-  test("Property changed", () =>
+  test("Property changed", () => {
     expectTypeOf<CreateDiff<{ a: string }, { a: number }>>().toEqualTypeOf<{
       added: {};
       removed: never;
       changed: { a: { before: string; after: number } };
-    }>());
+    }>();
+    expectTypeOf<CreateDiff<{ a?: string }, { a?: number }>>().toEqualTypeOf<{
+      added: {};
+      removed: never;
+      changed: { a: { before: string | undefined; after: number | undefined } };
+    }>();
+  });
 
-  test("Property removed", () =>
+  test("Property removed", () => {
     expectTypeOf<CreateDiff<{ a: string }, {}>>().toEqualTypeOf<{
       added: {};
       removed: "a";
       changed: {};
-    }>());
+    }>();
+    expectTypeOf<CreateDiff<{ a?: string }, {}>>().toEqualTypeOf<{
+      added: {};
+      removed: "a";
+      changed: {};
+    }>();
+  });
   test("Property added", () =>
     expectTypeOf<CreateDiff<{}, { a: string }>>().toEqualTypeOf<{
       added: { a: string };

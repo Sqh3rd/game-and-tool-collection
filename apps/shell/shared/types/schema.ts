@@ -1,7 +1,18 @@
-import { schemaModifier } from "@gatc/schemaModifier";
+import {
+  schemaModifier,
+  type EmptyDiff,
+  type SchemaBuildAdapter,
+} from "@gatc/schemaModifier";
+import type { Prettify, PrettifyDeep } from "@gatc/utils";
 import * as schema from "@nuxthub/db/schema";
 import { extractTablesFromSchema } from "drizzle-orm";
 import * as z from "zod";
+import type {
+  ModifiedSchema,
+  Operations,
+  SchemaGroupFromTable,
+  SimpleSchema,
+} from "../../../../packages/shared/schemaModifier/dist/lib/schema-modifier/schema-modifier.types";
 
 export const timestampMask = { createdAt: true, updatedAt: true } as const;
 
@@ -96,4 +107,5 @@ export const dbSchemas = schemaModifier("zod", tables)
   )
   // .withRelations(relations)
   .create();
-const game = dbSchemas.fagrc_game.insert;
+const user = dbSchemas.user.insert;
+type User = z.infer<typeof user>;

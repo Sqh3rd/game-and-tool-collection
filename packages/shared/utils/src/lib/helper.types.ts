@@ -21,6 +21,13 @@ export type Or<T extends boolean[]> =
   : T extends [infer First extends boolean] ? First
   : false;
 export type IsFalse<T extends boolean> = T extends false ? true : false;
+export type And<T extends boolean[]> =
+  T extends [infer First extends boolean, ...infer Rest extends boolean[]] ?
+    First extends false ?
+      false
+    : And<Rest>
+  : T extends [infer First extends boolean] ? First
+  : false;
 /**
  * Assumes both A and B are unions.
  *

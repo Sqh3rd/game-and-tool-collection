@@ -1,4 +1,4 @@
-import { Equals, Prettify, UnionIsEmpty } from "@gatc/utils";
+import { And, Equals, Prettify, UnionIsEmpty } from "@gatc/utils";
 import { IfThenElse, IsNever } from "drizzle-orm";
 
 export type Diff = {
@@ -14,7 +14,6 @@ export type Diff = {
   >;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type EmptyDiff = { added: {}; removed: never; changed: {} };
 
 export type GetChangedKeys<Before extends object, After extends object> =
@@ -28,7 +27,9 @@ export type GetChangedKeys<Before extends object, After extends object> =
     : never
   : never;
 export type CreateDiff<Before extends object, After extends object> =
-  Equals<Before, After> extends false ?
+  And<[Equals<Before, After>, Equals<keyof Before, keyof After>]> extends (
+    false
+  ) ?
     {
       added: Prettify<Omit<After, keyof Before>>;
       removed: IfThenElse<
