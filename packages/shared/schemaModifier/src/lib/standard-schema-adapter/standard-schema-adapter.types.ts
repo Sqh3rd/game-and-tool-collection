@@ -61,7 +61,7 @@ export type Adapter<T, Lib extends ValidationLibs> =
     T extends Date ?
       Schema[Lib]["Date"]
     : Schema<{
-        [Key in keyof T]: undefined extends T[Key] ?
+        [Key in keyof T]-?: undefined extends T[Key] ?
           Schema<Adapter<Exclude<T[Key], undefined>, Lib>>[Lib]["Optional"]
         : Adapter<T[Key], Lib>;
       }>[Lib]["Object"]
@@ -73,5 +73,3 @@ export type StandardSchemaAdapters = {
     BaseValues[Key]["Object"]
   >;
 };
-
-const t: Adapter<{ a: { b: number }; c: string }, "zod">;

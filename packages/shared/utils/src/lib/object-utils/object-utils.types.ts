@@ -52,4 +52,15 @@ export type MergeFunction = {
   };
 };
 
-export type Prettify<T extends object> = { [Key in keyof T]: T[Key] };
+export type Prettify<T extends object> = { [Key in keyof T]: T[Key] } & {};
+export type PrettifyDeep<
+  T extends object,
+  Limit extends number = 10,
+  Counter extends number[] = [],
+> =
+  Counter["length"] extends Limit ? T
+  : {
+      [Key in keyof T]: T[Key] extends object ?
+        PrettifyDeep<T[Key], Limit, [0, ...Counter]>
+      : T[Key];
+    };

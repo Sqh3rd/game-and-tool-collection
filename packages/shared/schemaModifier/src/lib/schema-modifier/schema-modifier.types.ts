@@ -47,7 +47,7 @@ export type SchemaGroup<
 
 export type SchemaGroupFromTable<
   TAdapter extends ValidationLibs,
-  TTable extends Table<any>,
+  TTable extends Table,
 > = SchemaGroup<
   TAdapter,
   SchemaBuildAdapter<"insert", TTable>[TAdapter],
@@ -57,7 +57,7 @@ export type SchemaGroupFromTable<
 
 export type SimpleSchema<
   TAdapter extends ValidationLibs,
-  T extends Record<string, Table<any>> = Record<string, Table<any>>,
+  T extends Record<string, Table> = Record<string, Table>,
 > = {
   [Key in keyof T as T[Key]["_"]["name"]]: SchemaGroupFromTable<
     TAdapter,
@@ -73,7 +73,7 @@ export type Modifications<
 export type GetTableByRelationName<
   TRelations extends ExtractTablesWithRelationsParts<
     AnyRelationsBuilderConfig,
-    Record<string, Table<any>>
+    Record<string, Table>
   >,
   TRelationsName extends TRelations[keyof TRelations]["name"],
 > =
@@ -89,10 +89,10 @@ export type GetTableByRelationName<
 export type Relations<
   TRelations extends ExtractTablesWithRelationsParts<
     AnyRelationsBuilderConfig,
-    Record<string, Table<any>>
+    Record<string, Table>
   > = ExtractTablesWithRelationsParts<
     AnyRelationsBuilderConfig,
-    Record<string, Table<any>>
+    Record<string, Table>
   >,
 > = {
   [Key in keyof TRelations as TRelations[Key]["table"]["_"]["name"]]: {
@@ -110,25 +110,22 @@ export type Relations<
 
 export type ModifiedSchema<
   TAdapter extends ValidationLibs,
-  T extends Record<string, Table<any>> = Record<string, Table<any>>,
+  T extends Record<string, Table> = Record<string, Table>,
   TSchema extends SimpleSchema<TAdapter, T> = SimpleSchema<TAdapter, T>,
   TModifications extends Modifications<TAdapter, TSchema> = Modifications<
     TAdapter,
     TSchema
   >,
 > = {
-  [Key in keyof TSchema]: ApplyDiffsByOperation<
-    TSchema[Key],
-    TModifications[Key]
-  > extends infer EModifiedEntry ?
-    {
-      [IKey in keyof EModifiedEntry & Operations]: Adapter<
-        EModifiedEntry[IKey],
-        TAdapter
-      >;
-    }
-  : Record<Operations, BaseValues[TAdapter]["Object"]>;
+  [Key in keyof TSchema]: WrapInner<
+    TAdapter,
+    ApplyDiffsByOperation<TAdapter, TSchema[Key], TModifications[Key]>
+  >;
 };
+
+type WrapInner<TAdapter extends ValidationLibs, T extends object> = {
+  [Key in keyof T]: Adapter<T[Key], TAdapter>;
+} & {};
 
 export type SelectNestedRelations<
   TRelations extends Relations,
@@ -151,13 +148,13 @@ export type SelectNestedRelations<
   : never;
 export type SelectNestedRelationsToSchema<
   TAdapter extends ValidationLibs,
-  T extends Record<string, Table<any>>,
+  T extends Record<string, Table>,
   TSchema extends SimpleSchema<TAdapter, T>,
   TModifications extends Modifications<TAdapter, TSchema>,
   TModifiedSchema extends ModifiedSchema<TAdapter, T, TSchema, TModifications>,
   TRelations extends ExtractTablesWithRelationsParts<
     AnyRelationsBuilderConfig,
-    Record<string, Table<any>>
+    Record<string, Table>
   >,
   TCurrentEntry extends keyof TModifiedSchema,
   TSelectedNestedRelations extends SelectNestedRelations<
@@ -197,7 +194,7 @@ export type SelectNestedRelationsToSchema<
 
 export type ModifiedSchemaWithRelations<
   TAdapter extends ValidationLibs,
-  T extends Record<string, Table<any>>,
+  T extends Record<string, Table>,
   TSchema extends SimpleSchema<TAdapter, T>,
   TModifications extends Modifications<TAdapter, TSchema>,
   TRelations extends ExtractTablesWithRelationsParts<
@@ -212,7 +209,7 @@ export type ModifiedSchemaWithRelations<
   > = ModifiedSchema<TAdapter, T, TSchema, TModifications>,
 > = {
   [Key in keyof _TModifiedSchema]: _TModifiedSchema[Key]
-    & ([TRelations] extends [never] ? object
+    & ([TRelations] extends [never] ? {}
     : {
         selectWith: <
           TSelectedNestedRelations extends SelectNestedRelations<
@@ -236,31 +233,29 @@ export type ModifiedSchemaWithRelations<
 
 export type FlattenModifiedSchema<
   TAdapter extends ValidationLibs,
-  T extends Record<string, Table<any>>,
+  T extends Record<string, Table>,
   TSchema extends SimpleSchema<TAdapter, T>,
   TModifications extends Modifications<TAdapter, TSchema>,
   TMergeBehaviour extends MergeBehaviour,
   TValues extends ModifiedSchema<TAdapter, T, TSchema, TModifications> =
     ModifiedSchema<TAdapter, T, TSchema, TModifications>,
 > = {
-  [Operation in Operations]: Prettify<
-    Adapter<
-      StandardSchemaV1<
-        MergeUnion<
-          keyof TValues extends infer EKey ?
-            EKey extends keyof TValues ?
-              ForceAccess<TValues[EKey], Operation> extends (
-                infer ESS extends StandardSchemaV1<object>
-              ) ?
-                StandardTypedV1.InferOutput<ESS>
-              : object
-            : never
-          : never,
-          TMergeBehaviour
-        >
-      >,
-      TAdapter
-    >
+  [Operation in Operations]: Adapter<
+    StandardSchemaV1<
+      MergeUnion<
+        keyof TValues extends infer EKey ?
+          EKey extends keyof TValues ?
+            ForceAccess<TValues[EKey], Operation> extends (
+              infer ESS extends StandardSchemaV1<object>
+            ) ?
+              StandardTypedV1.InferOutput<ESS>
+            : object
+          : never
+        : never,
+        TMergeBehaviour
+      >
+    >,
+    TAdapter
   >;
 };
 
@@ -315,16 +310,25 @@ export type CreateDiffsByOperation<
 };
 
 export type ApplyDiffsByOperation<
+  TAdapter extends ValidationLibs,
   TSource,
   TDiffs extends Partial<Record<Operations, Diff>>,
 > =
   TSource extends Record<Operations, StandardSchemaV1> ?
     {
-      [Operation in Operations]: Prettify<
-        Operation extends keyof TDiffs ?
-          ApplyDiff<TSource[Operation], NonNullable<TDiffs[Operation]>>
-        : TSource[Operation]
-      >;
+      [Operation in Operations]: Operation extends keyof TDiffs ?
+        Adapter<
+          ApplyDiff<
+            StandardTypedV1.InferOutput<TSource[Operation]> extends (
+              infer Inner extends object
+            ) ?
+              Inner
+            : TSource[Operation],
+            NonNullable<TDiffs[Operation]>
+          >,
+          TAdapter
+        >
+      : TSource[Operation];
     }
   : Record<Operations, object>;
 
@@ -378,14 +382,14 @@ export type SimpleSchemaModifier = {
   withRelations: (
     relations: ExtractTablesWithRelationsParts<
       AnyRelationsBuilderConfig,
-      Record<string, Table<any>>
+      Record<string, Table>
     >,
   ) => SimpleSchemaModifier;
 };
 
 export type SchemaModifier<
   TAdapter extends ValidationLibs,
-  T extends Record<string, Table<any>>,
+  T extends Record<string, Table>,
   TSchema extends SimpleSchema<TAdapter, T> = SimpleSchema<TAdapter, T>,
   TModifications extends Modifications<TAdapter, TSchema> = Record<
     keyof TSchema,
@@ -400,13 +404,17 @@ export type SchemaModifier<
    * Create a modified schema
    * @returns
    */
-  create: () => ModifiedSchemaWithRelations<
-    TAdapter,
-    T,
-    TSchema,
-    TModifications,
-    TRelations
+  create: () => Prettify<
+    ModifiedSchemaWithRelations<
+      TAdapter,
+      T,
+      TSchema,
+      TModifications,
+      TRelations
+    >
   >;
+
+  modifications: TModifications;
 
   /**
    * Modify a specific entry in the schema
@@ -415,7 +423,11 @@ export type SchemaModifier<
    */
   modify: <
     Key extends keyof TSchema,
-    Base extends ApplyDiffsByOperation<TSchema[Key], TModifications[Key]>,
+    Base extends ApplyDiffsByOperation<
+      TAdapter,
+      TSchema[Key],
+      TModifications[Key]
+    >,
     CModification extends Partial<
       Record<Operations, BaseValues[TAdapter]["Object"]>
     >,
@@ -438,14 +450,15 @@ export type SchemaModifier<
   modifyUnited: <
     Key extends keyof TSchema,
     BaseUnited extends MergeUnion<
-      Values<ApplyDiffsByOperation<TSchema[Key], TModifications[Key]>> & object,
+      Values<ApplyDiffsByOperation<TAdapter, TSchema[Key], TModifications[Key]>>
+        & object,
       "strict"
     >,
     CModificationUnited extends BaseValues[TAdapter]["Object"],
   >(
     key: Key,
     factory: (
-      input: Prettify<BaseUnited>,
+      input: BaseUnited,
     ) => Guard<
       Equals<CModificationUnited, BaseUnited>,
       "Unnecessary Modification: Modified Schema is equal to base schema",

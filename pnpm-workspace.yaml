@@ -10,7 +10,8 @@ autoInstallPeers: true
 minimumReleaseAgeExclude:
   - "eslint-plugin-playwright@2.11.0"
   - "globals@17.8.0"
+  - "@rollup/rollup-linux-x64-musl@4.64.2"
 onlyBuiltDependencies:
   - "nx"
 overrides:
-  "@nuxthub/core": "link:../../source_code/nuxthub-core"
+  "@nuxthub/core": link:../nuxthub-core

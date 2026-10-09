@@ -1,8 +1,6 @@
-import { createSchema, schemaModifier } from "@gatc/schemaModifier";
-import { relations } from "@nuxthub/db/relations";
+import { schemaModifier } from "@gatc/schemaModifier";
 import * as schema from "@nuxthub/db/schema";
-import { extractTablesFromSchema, Table } from "drizzle-orm";
-import type { PgTable } from "drizzle-orm/pg-core";
+import { extractTablesFromSchema } from "drizzle-orm";
 import * as z from "zod";
 
 export const timestampMask = { createdAt: true, updatedAt: true } as const;
@@ -96,9 +94,6 @@ export const dbSchemas = schemaModifier("zod", tables)
   .modifyUnited("fagrc_junction_processable_recipe", (base) =>
     base.safeExtend({ type: z.enum(["IN", "OUT"]) }),
   )
-  .withRelations(relations)
+  // .withRelations(relations)
   .create();
 const game = dbSchemas.fagrc_game.insert;
-type T = z.infer<typeof game>;
-
-createSchema("zod", tables);

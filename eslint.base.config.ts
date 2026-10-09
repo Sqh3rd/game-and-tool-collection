@@ -11,7 +11,11 @@ export default defineConfig([
       tsEslint.configs.strictTypeChecked,
       nx.configs["flat/typescript"],
     ],
-    languageOptions: { parserOptions: { projectService: true } },
+    languageOptions: {
+      parserOptions: {
+        projectService: { allowDefaultProject: ["eslint.config.ts"] },
+      },
+    },
     rules: {
       "@nx/enforce-module-boundaries": [
         "error",
@@ -36,6 +40,7 @@ export default defineConfig([
           enableAutofixRemoval: { imports: true },
         },
       ],
+      "@typescript-eslint/no-empty-object-type": "off",
     },
   },
 ]);
