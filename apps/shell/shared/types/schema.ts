@@ -72,13 +72,13 @@ export type Login = z.infer<typeof loginSchema>;
 
 const tables = extractTablesFromSchema(schema);
 export const dbSchemas = schemaModifier("zod", tables)
-  .modifyAll(({ insert, update }) => ({
-    insert: insert.omit(timestampMask),
-    update: update.omit(timestampMask),
-  }))
+  // .modifyAll(({ insert, update }) => ({
+  //   insert: insert.omit(timestampMask),
+  //   update: update.omit(timestampMask),
+  // }))
   .modify("user", ({ insert, select }) => ({
     insert: insert
-      .omit({ hashedPassword: true })
+      .omit({ hashedPassword: true, uuid: true })
       .safeExtend({
         email: z.email(),
         name: z
@@ -96,7 +96,7 @@ export const dbSchemas = schemaModifier("zod", tables)
       .omit({ hashedPassword: true, uuid: true })
       .safeExtend({ email: z.email() }),
   }))
-  .modify("fagrc_mod", ({ insert, update, select }) => ({
+  .modify("fagrc_mod", ({ insert, update }) => ({
     insert: insert
       .omit({ baseGame: true })
       .required({ name: true, link: true }),

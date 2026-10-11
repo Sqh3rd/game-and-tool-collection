@@ -38,7 +38,7 @@ export type BaseValues = {
   zod: { Base: z.ZodType; Object: z.ZodObject };
 };
 
-type Schema<T = unknown> = {
+export type ValidationSchema<T = unknown> = {
   valibot: {
     Object: T extends v.ObjectEntries ? v.ObjectSchema<T, undefined> : never;
     Optional: T extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>> ?
@@ -59,13 +59,15 @@ export type Adapter<T, Lib extends ValidationLibs> =
   T extends StandardSchemaV1<infer Inner> ? Adapter<Inner, Lib>
   : T extends object ?
     T extends Date ?
-      Schema[Lib]["Date"]
-    : Schema<{
+      ValidationSchema[Lib]["Date"]
+    : ValidationSchema<{
         [Key in keyof T]-?: undefined extends T[Key] ?
-          Schema<Adapter<Exclude<T[Key], undefined>, Lib>>[Lib]["Optional"]
+          ValidationSchema<
+            Adapter<Exclude<T[Key], undefined>, Lib>
+          >[Lib]["Optional"]
         : Adapter<T[Key], Lib>;
       }>[Lib]["Object"]
-  : Schema<T>[Lib]["Base"];
+  : ValidationSchema<T>[Lib]["Base"];
 
 export type StandardSchemaAdapters = {
   [Key in ValidationLibs]: StandardSchemaAdapter<

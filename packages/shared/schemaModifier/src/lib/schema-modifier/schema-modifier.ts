@@ -23,6 +23,7 @@ import {
 import {
   SchemaGroup,
   SchemaModifier,
+  SimpleSchema,
   SimpleSchemaModifier,
 } from "./schema-modifier.types";
 
@@ -180,7 +181,7 @@ export const schemaModifier = <
 >(
   adapter: TAdapter,
   schema: T,
-): SchemaModifier<TAdapter, T> =>
+): SchemaModifier<TAdapter, T, SimpleSchema<TAdapter, T>> =>
   internalSchemaModifier(
     adapter,
     schema,
@@ -190,4 +191,4 @@ export const schemaModifier = <
     getKeys(schema)
       .map((key) => ({ [key]: modificationPipe<StandardSchemaV1>() }))
       .reduce((prev, cur) => ({ ...prev, ...cur }), {}),
-  ) as unknown as SchemaModifier<TAdapter, T>;
+  ) as unknown as SchemaModifier<TAdapter, T, SimpleSchema<TAdapter, T>>;
