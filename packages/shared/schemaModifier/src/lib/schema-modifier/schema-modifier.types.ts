@@ -212,12 +212,16 @@ export type SchemaWithRelations<
 };
 
 export type FlattenSchema<
+  TAdapter extends ValidationLibs,
   TSchema extends Record<string, Record<Operations, StandardSchemaV1>>,
   TMergeBehaviour extends MergeBehaviour,
 > = {
-  [Operation in Operations]: MergeUnion<
-    TSchema[keyof TSchema][Operation],
-    TMergeBehaviour
+  [Operation in Operations]: Wrap<
+    TAdapter,
+    MergeUnion<
+      Extract<TAdapter, TSchema[keyof TSchema][Operation]>,
+      TMergeBehaviour
+    >
   >;
 };
 
@@ -338,15 +342,20 @@ export type MergeModificationToSchema<
 };
 
 export type MergeDiffToAllInSchema<
+  TAdapter extends ValidationLibs,
   TSchema extends Record<string, Record<Operations, StandardSchemaV1>>,
   TModification extends Partial<Record<Operations, Diff>>,
 > = {
   [Key in keyof TSchema]: Omit<TSchema[Key], keyof TModification> & {
-    [InnerKey in keyof TModification]-?: ApplyDiff<
-      TSchema[Key],
-      TModification[InnerKey] & Diff
-    >
-      & StandardSchemaV1;
+    [
+      InnerKey in keyof TModification & Operations
+    ]-?: TModification[InnerKey] extends Diff ?
+      ApplyValidationDiff<
+        TAdapter,
+        TSchema[Key][InnerKey],
+        TModification[InnerKey]
+      >
+    : never;
   };
 };
 
@@ -371,13 +380,33 @@ export type SimpleSchemaModifier = {
   ) => SimpleSchemaModifier;
 };
 
-type PrettifyInner<TAdapter extends ValidationLibs, T extends object> = {
-  [Key in keyof T]: PrettifyAdapterObject<TAdapter, T>;
-} & {};
+type Extract<TAdapter extends ValidationLibs, T> =
+  T extends ValidationSchema<infer Inner extends object>[TAdapter]["Object"] ?
+    Inner
+  : T;
+type Wrap<
+  TAdapter extends ValidationLibs,
+  T,
+> = ValidationSchema<T>[TAdapter]["Object"];
 type PrettifyAdapterObject<TAdapter extends ValidationLibs, T> =
   T extends ValidationSchema<infer Inner extends object>[TAdapter]["Object"] ?
     ValidationSchema<Prettify<Inner>>[TAdapter]["Object"]
   : T;
+type PrettifyInner<TAdapter extends ValidationLibs, T extends object> = {
+  [Key in keyof T]: PrettifyAdapterObject<TAdapter, T[Key]>;
+} & {};
+
+type CreateValidationDiff<
+  TAdapter extends ValidationLibs,
+  Before extends object,
+  After extends object,
+> = CreateDiff<Extract<TAdapter, Before>, Extract<TAdapter, After>>;
+
+type ApplyValidationDiff<
+  TAdapter extends ValidationLibs,
+  Source extends object,
+  TDiff extends Diff,
+> = Wrap<TAdapter, ApplyDiff<Extract<TAdapter, Source>, TDiff>>;
 
 export type SchemaModifier<
   TAdapter extends ValidationLibs,
@@ -401,15 +430,13 @@ export type SchemaModifier<
    */
   modify: <
     Key extends keyof TSchema,
-    Base extends TSchema[Key] & {},
+    Base extends TSchema[Key],
     CModification extends Partial<
       Record<Operations, BaseValues[TAdapter]["Object"]>
     >,
   >(
     key: Key,
-    factory: (
-      input: PrettifyInner<TAdapter, Base>,
-    ) => GuardModification<CModification, Base>,
+    factory: (input: Base) => GuardModification<CModification, Base>,
   ) => SchemaModifier<
     TAdapter,
     T,
@@ -419,7 +446,7 @@ export type SchemaModifier<
 
   modifyUnited: <
     Key extends keyof TSchema,
-    BaseUnited extends MergeUnion<Values<TSchema[Key]> & {}, "strict">,
+    BaseUnited extends MergeUnion<Values<TSchema[Key]> & {}>,
     CModificationUnited extends BaseValues[TAdapter]["Object"],
   >(
     key: Key,
@@ -437,11 +464,11 @@ export type SchemaModifier<
       TSchema,
       Key,
       {
-        [InnerKey in Operations]: ApplyDiff<
+        [InnerKey in Operations]: ApplyValidationDiff<
+          TAdapter,
           TSchema[Key][InnerKey],
-          CreateDiff<BaseUnited, CModificationUnited>
-        >
-          & StandardSchemaV1;
+          CreateValidationDiff<TAdapter, BaseUnited, CModificationUnited>
+        >;
       }
     >,
     TRelations
@@ -462,7 +489,7 @@ export type SchemaModifier<
    * @returns a new instance of {@link SchemaModifier} with the given modification
    */
   modifyAll: <
-    Base extends FlattenSchema<TSchema, "strict">,
+    Base extends FlattenSchema<TAdapter, TSchema, "strict">,
     CModifications extends Partial<
       Record<Operations, BaseValues[TAdapter]["Object"]>
     >,
@@ -474,9 +501,11 @@ export type SchemaModifier<
     TAdapter,
     T,
     MergeDiffToAllInSchema<
+      TAdapter,
       TSchema,
       {
-        [Key in keyof CModifications]: CreateDiff<
+        [Key in keyof CModifications]: CreateValidationDiff<
+          TAdapter,
           Base[Key & keyof Base] & {},
           CModifications[Key] & {}
         >;

@@ -1,18 +1,7 @@
-import {
-  schemaModifier,
-  type EmptyDiff,
-  type SchemaBuildAdapter,
-} from "@gatc/schemaModifier";
-import type { Prettify, PrettifyDeep } from "@gatc/utils";
+import { schemaModifier } from "@gatc/schemaModifier";
 import * as schema from "@nuxthub/db/schema";
 import { extractTablesFromSchema } from "drizzle-orm";
 import * as z from "zod";
-import type {
-  ModifiedSchema,
-  Operations,
-  SchemaGroupFromTable,
-  SimpleSchema,
-} from "../../../../packages/shared/schemaModifier/dist/lib/schema-modifier/schema-modifier.types";
 
 export const timestampMask = { createdAt: true, updatedAt: true } as const;
 
@@ -72,10 +61,10 @@ export type Login = z.infer<typeof loginSchema>;
 
 const tables = extractTablesFromSchema(schema);
 export const dbSchemas = schemaModifier("zod", tables)
-  // .modifyAll(({ insert, update }) => ({
-  //   insert: insert.omit(timestampMask),
-  //   update: update.omit(timestampMask),
-  // }))
+  .modifyAll(({ insert, update }) => ({
+    insert: insert.omit(timestampMask),
+    update: update.omit(timestampMask),
+  }))
   .modify("user", ({ insert, select }) => ({
     insert: insert
       .omit({ hashedPassword: true, uuid: true })
@@ -102,10 +91,13 @@ export const dbSchemas = schemaModifier("zod", tables)
       .required({ name: true, link: true }),
     update: update.omit({ baseGame: true }),
   }))
+  .modify("fagrc_junction_processable_recipe", ({ insert }) => ({
+    insert: insert.safeExtend({ measurement: z.email() }),
+  }))
   .modifyUnited("fagrc_junction_processable_recipe", (base) =>
     base.safeExtend({ type: z.enum(["IN", "OUT"]) }),
   )
-  // .withRelations(relations)
+  .withRelations(relations)
   .create();
-const user = dbSchemas.user.insert;
-type User = z.infer<typeof user>;
+const jpr = dbSchemas.fagrc_junction_processable_recipe.insert;
+type User = z.infer<typeof jpr>;
