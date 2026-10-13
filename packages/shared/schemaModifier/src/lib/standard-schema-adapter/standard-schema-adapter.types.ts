@@ -5,6 +5,7 @@ import { z } from "zod";
 import * as v from "valibot";
 import * as dz from "drizzle-orm/zod";
 import * as dv from "drizzle-orm/valibot";
+import { Prettify } from "@gatc/utils";
 
 export type StandardSchemaAdapter<
   BaseType extends StandardSchemaV1 = StandardSchemaV1,
@@ -38,7 +39,7 @@ export type BaseValues = {
   zod: { Base: z.ZodType; Object: z.ZodObject };
 };
 
-export type ValidationSchema<T = unknown> = {
+type ValidationSchema<T = unknown> = {
   valibot: {
     Object: T extends v.ObjectEntries ? v.ObjectSchema<T, undefined> : never;
     Optional: T extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>> ?
@@ -54,6 +55,21 @@ export type ValidationSchema<T = unknown> = {
     Base: z.ZodType<T>;
   };
 };
+
+export type Extract<TAdapter extends ValidationLibs, T> =
+  T extends ValidationSchema<infer Inner extends object>[TAdapter]["Object"] ?
+    Inner
+  : T;
+
+export type Wrap<
+  TAdapter extends ValidationLibs,
+  T,
+> = ValidationSchema<T>[TAdapter]["Object"];
+
+export type PrettifyAdapterObject<TAdapter extends ValidationLibs, T> =
+  T extends ValidationSchema<infer Inner extends object>[TAdapter]["Object"] ?
+    ValidationSchema<Prettify<Inner>>[TAdapter]["Object"]
+  : T;
 
 export type Adapter<T, Lib extends ValidationLibs> =
   T extends StandardSchemaV1<infer Inner> ? Adapter<Inner, Lib>
