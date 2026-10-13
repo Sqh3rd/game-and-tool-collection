@@ -6,10 +6,17 @@ import type {
 } from "./diff.types";
 
 describe("Create Diff", () => {
-  test("No change", () =>
+  test("No change", () => {
     expectTypeOf<
       CreateDiff<{ a: string }, { a: string }>
-    >().toEqualTypeOf<EmptyDiff>());
+    >().toEqualTypeOf<EmptyDiff>();
+    expectTypeOf<
+      CreateDiff<{ a?: string }, { a?: string }>
+    >().toEqualTypeOf<EmptyDiff>();
+    expectTypeOf<
+      CreateDiff<{ a: string | number }, { a: string | number }>
+    >().toEqualTypeOf<EmptyDiff>();
+  });
 
   test("Property changed", () => {
     expectTypeOf<CreateDiff<{ a: string }, { a: number }>>().toEqualTypeOf<{
@@ -21,6 +28,11 @@ describe("Create Diff", () => {
       added: {};
       removed: never;
       changed: { a: { before: string | undefined; after: number | undefined } };
+    }>();
+    expectTypeOf<CreateDiff<{ a?: string }, { a: string }>>().toEqualTypeOf<{
+      added: {};
+      removed: never;
+      changed: { a: { before: string | undefined; after: string } };
     }>();
   });
 
@@ -35,21 +47,33 @@ describe("Create Diff", () => {
       removed: "a";
       changed: {};
     }>();
+    expectTypeOf<
+      CreateDiff<{ a: string; b: number }, { b: number }>
+    >().toEqualTypeOf<{ added: {}; removed: "a"; changed: {} }>();
+    expectTypeOf<
+      CreateDiff<{ a?: string; b?: number }, { b?: number }>
+    >().toEqualTypeOf<{ added: {}; removed: "a"; changed: {} }>();
   });
-  test("Property added", () =>
+  test("Property added", () => {
     expectTypeOf<CreateDiff<{}, { a: string }>>().toEqualTypeOf<{
       added: { a: string };
       removed: never;
       changed: {};
-    }>());
+    }>();
+    expectTypeOf<CreateDiff<{}, { a?: string }>>().toEqualTypeOf<{
+      added: { a?: string | undefined };
+      removed: never;
+      changed: {};
+    }>();
+  });
 
   test("Multiple changes", () =>
     expectTypeOf<
-      CreateDiff<{ a: string; b: number }, { a: number; c: string }>
+      CreateDiff<{ a: string; b: number }, { a?: number; c: string }>
     >().toEqualTypeOf<{
       added: { c: string };
       removed: "b";
-      changed: { a: { before: string; after: number } };
+      changed: { a: { before: string; after: number | undefined } };
     }>());
 });
 
@@ -80,6 +104,11 @@ describe("Merge Diff", () => {
         CreateDiff<{}, { b: number }>,
         CreateDiff<{ a: string }, { b: number }>,
       ],
+      [
+        CreateDiff<{}, { a?: string }>,
+        CreateDiff<{ b: string }, { b?: string }>,
+        CreateDiff<{ b: string }, { a?: string; b?: string }>,
+      ],
     ];
     type Actual<N extends keyof Args & number> = MergeDiffs<
       Args[N][0],
@@ -89,6 +118,8 @@ describe("Merge Diff", () => {
     expectTypeOf<Actual<0>>().toEqualTypeOf<Expected<0>>();
     expectTypeOf<Actual<1>>().toEqualTypeOf<Expected<1>>();
     expectTypeOf<Actual<2>>().toEqualTypeOf<Expected<2>>();
+    expectTypeOf<Actual<3>>().toEqualTypeOf<Expected<3>>();
+    type T = Actual<3>;
   });
 });
 

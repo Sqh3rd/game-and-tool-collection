@@ -17,19 +17,15 @@ export type Diff = {
 export type EmptyDiff = { added: {}; removed: never; changed: {} };
 
 export type GetChangedKeys<Before extends object, After extends object> =
-  keyof Before & keyof After extends infer Key ?
-    Key extends keyof Before & keyof After ?
-      Equals<After[Key & keyof After], Before[Key & keyof Before]> extends (
-        true
-      ) ?
-        never
-      : Key
-    : never
+  keyof Before & keyof After extends (
+    infer Key extends keyof Before & keyof After
+  ) ?
+    Equals<After[Key & keyof After], Before[Key & keyof Before]> extends true ?
+      never
+    : Key
   : never;
 export type CreateDiff<Before extends object, After extends object> =
-  And<[Equals<Before, After>, Equals<keyof Before, keyof After>]> extends (
-    false
-  ) ?
+  And<Equals<Before, After>, Equals<keyof Before, keyof After>> extends false ?
     {
       added: Prettify<Omit<After, keyof Before>>;
       removed: IfThenElse<

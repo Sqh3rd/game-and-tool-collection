@@ -6,28 +6,20 @@ export type IfThenElse<If extends boolean, Then, Else> =
 export type Not<A extends boolean> = IfThenElse<A, false, true>;
 
 export type Extends<A, B> = A extends B ? true : false;
-export type Equals<A, B> =
-  A extends B ?
-    B extends A ?
-      true
-    : false
-  : false;
-export type IsNever<T> = Equals<[T], [never]>;
-export type Or<T extends boolean[]> =
-  T extends [infer First extends boolean, ...infer Rest extends boolean[]] ?
-    First extends true ?
-      true
-    : Or<Rest>
-  : T extends [infer First extends boolean] ? First
-  : false;
+type SimpleEquals<A, B> = IfThenElse<Extends<A, B>, Extends<B, A>, false>;
+export type Equals<A, B> = IfThenElse<
+  IsUnion<A>,
+  IfThenElse<IsUnion<B>, UnionsEqual<A, B>, false>,
+  IfThenElse<IsUnion<B>, false, SimpleEquals<A, B>>
+>;
+export type UnionsEqual<A, B> = And<
+  IsNever<Exclude<A, B>>,
+  IsNever<Exclude<B, A>>
+>;
+export type IsNever<T> = SimpleEquals<[T], [never]>;
 export type IsFalse<T extends boolean> = T extends false ? true : false;
-export type And<T extends boolean[]> =
-  T extends [infer First extends boolean, ...infer Rest extends boolean[]] ?
-    First extends false ?
-      false
-    : And<Rest>
-  : T extends [infer First extends boolean] ? First
-  : false;
+export type And<A extends boolean, B extends boolean> = IfThenElse<A, B, false>;
+export type Or<A extends boolean, B extends boolean> = IfThenElse<A, true, B>;
 /**
  * Assumes both A and B are unions.
  *
