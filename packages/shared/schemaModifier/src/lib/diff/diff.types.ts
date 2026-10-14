@@ -1,3 +1,6 @@
+import { And, Equals, Prettify, UnionIsEmpty } from "@gatc/utils";
+import { IfThenElse, IsNever } from "drizzle-orm";
+
 export type Diff = {
   // Keys and values that were added
   added: object;
@@ -11,24 +14,25 @@ export type Diff = {
   >;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type EmptyDiff = { added: {}; removed: never; changed: {} };
 
 export type GetChangedKeys<Before extends object, After extends object> =
-  keyof Before & keyof After extends infer Key ?
-    Key extends keyof Before & keyof After ?
-      Equals<After[Key & keyof After], Before[Key & keyof Before]> extends (
-        true
-      ) ?
-        never
-      : Key
-    : never
+  keyof Before & keyof After extends (
+    infer Key extends keyof Before & keyof After
+  ) ?
+    Equals<After[Key & keyof After], Before[Key & keyof Before]> extends true ?
+      never
+    : Key
   : never;
 export type CreateDiff<Before extends object, After extends object> =
-  Equals<Before, After> extends false ?
+  And<Equals<Before, After>, Equals<keyof Before, keyof After>> extends false ?
     {
-      added: Omit<After, keyof Before>;
-      removed: Exclude<keyof Before, keyof After>;
+      added: Prettify<Omit<After, keyof Before>>;
+      removed: IfThenElse<
+        IsNever<keyof After>,
+        keyof Before,
+        Exclude<keyof Before, keyof After>
+      >;
       changed: {
         [Key in GetChangedKeys<Before, After>]: {
           before: Before[Key];
@@ -38,25 +42,27 @@ export type CreateDiff<Before extends object, After extends object> =
     }
   : EmptyDiff;
 
-export type ApplyDiff<TSource extends object, TDiff extends Diff> = Omit<
-  TSource,
-  keyof TDiff["changed"] | TDiff["removed"]
->
-  & TDiff["added"]
-  & IfThenElse<
-    UnionIsEmpty<keyof TDiff["changed"]>,
-    object,
-    { [Key in keyof TDiff["changed"]]: TDiff["changed"][Key]["after"] }
-  >;
+export type ApplyDiff<TSource extends object, TDiff extends Diff> = Prettify<
+  Omit<TSource, keyof TDiff["changed"] | TDiff["removed"]>
+    & TDiff["added"]
+    & IfThenElse<
+      UnionIsEmpty<keyof TDiff["changed"]>,
+      {},
+      { [Key in keyof TDiff["changed"]]: TDiff["changed"][Key]["after"] }
+    >
+>;
 
 export type MergeDiffs<TDBefore extends Diff, TDAfter extends Diff> =
   Equals<TDBefore, EmptyDiff> extends true ? TDAfter
   : Equals<TDAfter, EmptyDiff> extends true ? TDBefore
   : {
-      added: Omit<TDBefore["added"], TDAfter["removed"]> & TDAfter["added"];
+      added: Prettify<
+        Omit<TDBefore["added"], TDAfter["removed"]>
+          & Omit<TDAfter["added"], TDBefore["removed"]>
+      >;
       removed:
         | Exclude<TDBefore["removed"], keyof TDAfter["added"]>
-        | TDAfter["removed"];
+        | Exclude<TDAfter["removed"], keyof TDBefore["added"]>;
       changed: {
         [
           Key in

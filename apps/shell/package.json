@@ -1,9 +1,14 @@
 {
-  "name": "@game-and-tool-collection/shell",
+  "name": "@gatc/shell",
   "version": "0.0.1",
   "private": true,
   "scripts": {
     "nuxt-prepare": "nuxt prepare",
     "nuxt-cleanup": "nuxt cleanup"
+  },
+  "dependencies": {
+    "@gatc/schemaModifier": "workspace:*",
+    "@gatc/utils": "workspace:*",
+    "zod": "^4.4.3"
   }
 }

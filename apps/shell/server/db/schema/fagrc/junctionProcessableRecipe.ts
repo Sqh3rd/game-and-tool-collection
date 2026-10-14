@@ -28,5 +28,5 @@ export const junctionProcessableRecipe = snakeCase.table(
     type: junctionProcessableRecipeType().notNull(),
     ...timestamps,
   },
-  (t) => [primaryKey({ columns: [t.recipeId, t.processableId] })],
+  (t) => [primaryKey({ columns: [t.recipeId, t.processableId, t.type] })],
 );

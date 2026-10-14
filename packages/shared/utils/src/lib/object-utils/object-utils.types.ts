@@ -7,9 +7,9 @@ export type KeyValuePairs<T extends object> =
     : never
   : never;
 
-export interface FunctionWrapper<Func extends (...args: unknown[]) => unknown> {
+export type FunctionWrapper<Func extends (...args: unknown[]) => unknown> = {
   (...args: Parameters<Func>): ReturnType<Func>;
-}
+};
 
 export type CallableObject<
   Func extends (...args: unknown[]) => unknown,
@@ -25,7 +25,7 @@ export type MergeStrategy<T1 extends object, T2 extends object, R> = (
   val2: T2[keyof T2],
 ) => R;
 
-export interface MergeFunction {
+export type MergeFunction = {
   <T1 extends object, T2 extends object, R>(
     a: T1,
     b: T2,
@@ -50,4 +50,17 @@ export interface MergeFunction {
       Values<T1> | Values<T2> | [...Values<T1>, ...Values<T2>]
     >;
   };
-}
+};
+
+export type Prettify<T extends object> = { [Key in keyof T]: T[Key] } & {};
+export type PrettifyDeep<
+  T extends object,
+  Limit extends number = 10,
+  Counter extends number[] = [],
+> =
+  Counter["length"] extends Limit ? T
+  : {
+      [Key in keyof T]: T[Key] extends object ?
+        PrettifyDeep<T[Key], Limit, [0, ...Counter]>
+      : T[Key];
+    };
